@@ -104,11 +104,12 @@ function M.install(state)
   if v.kind=='list' then local xs={};for i,x in ipairs(v.data) do if V.truth(state:call(a[2],{V.int(i-1),x},env)) then xs[#xs+1]=x end end;v.data=xs
   else for k,x in pairs(v.data) do if not V.truth(state:call(a[2],{V.string(k),x},env)) then v.data[k]=nil end end end;return v
  end)
+ def('getcwd',0,0,function() return V.string(vim.fn.getcwd()) end)
  def('has',1,1,function(a) local n=V.text(a[1]);return V.int((n=='vim9script' or n=='float' or n=='num64') and 1 or 0) end)
  def('exists',1,1,function(a,env)
   local n=V.text(a[1]);if n:sub(1,1)=='*' then return V.int((funcs[n:sub(2)] or env:find(n:sub(2))) and 1 or 0) end
   if n:sub(1,1)==':' then return V.int(0) end
-  local ok=pcall(function() return state:lookup(n,env) end);return V.int(ok and 1 or 0)
+  local ok=pcall(function() return state:expr(require('vim9.parser').expression(n),env) end);return V.int(ok and 1 or 0)
  end)
  def('test_null_function',0,0,function() return V.func({null=true}) end)
  def('test_null_string',0,0,function() return V.string('') end)

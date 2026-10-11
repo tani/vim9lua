@@ -3,6 +3,86 @@ local Env=require('vim9.environment')
 local E=require('vim9.errors')
 local State={};State.__index=State
 local M={}
+function State:script(env)
+ while env.parent do env=env.parent end
+ return env
+end
+function State:canonical(path)
+ return vim.fn.resolve(vim.fn.fnamemodify(path,':p'))
+end
+function State:load(path,once)
+ path=self:canonical(path)
+ local old=self.modules[path]
+ if once and old then return old end
+ if vim.fn.filereadable(path)==0 then E.raise('E484','Can\'t open file '..path) end
+ local parsed,tree=pcall(require('vim9.parser').parse,table.concat(vim.fn.readfile(path),'\n')..'\n',{filename=path})
+ if not parsed then if type(tree)=='table' then tree.filename=path end;error(tree,0) end
+ local noclear=tree.body[1] and tree.body[1].tag=='vim9script' and tree.body[1].noclear
+ local scope=old or Env.new(nil,'script')
+ scope.filename=path;scope.exports=scope.exports or {};scope.imports={}
+ if not noclear then scope.cells={};scope.exports={};scope.vim9=false end
+ self.modules[path]=scope -- register before executing to permit cycles
+ scope.reloadable={}
+ if noclear and old then for name in pairs(scope.cells) do scope.reloadable[name]=true end end
+ local ok,signal=pcall(function() return self:block(tree.body,scope) end)
+ scope.reloadable=nil
+ if not ok then self.modules[path]=nil;error(signal,0) end
+ if signal and signal.kind~='finish' then E.raise('E587','Invalid top-level control flow') end
+ return scope
+end
+function State:import(n,env)
+ local owner=self:script(env)
+ local scope=env;while scope do if scope.kind=='function' then E.raise('E1094','Import can only be used in a script',n) end;scope=scope.parent end
+ local value=self:expr(n.path,env)
+ if value.kind~='string' or value.data=='' then E.raise('E1071','Invalid string for :import',n) end
+ local path=value.data;local alias=n.alias
+ if not alias then
+  if not path:match('%.vim$') then E.raise('E1257','Imported script must use "as" or end in .vim',n) end
+  alias=vim.fn.fnamemodify(path,':t:r')
+ end
+ if alias=='' then E.raise('E1261','Cannot import .vim without using "as"',n) end
+ if not alias:match('^[A-Za-z_][A-Za-z_0-9]*$') then E.raise('E1047','Invalid import name',n) end
+ if path:sub(1,1)=='.' then path=vim.fn.fnamemodify(owner.filename or '.',':p:h')..'/'..path
+ elseif path:sub(1,1)~='/' then
+  local found
+  for _,root in ipairs(self.runtimepath) do
+   if vim.fn.fnamemodify(root,':t')~='after' then
+    local candidate=root..(n.autoload and '/autoload/' or '/import/')..path
+    if vim.fn.filereadable(candidate)==1 then found=candidate;break end
+   end
+  end
+  if not found then E.raise('E1053','Could not import "'..path..'"',n) end
+  path=found
+ end
+ path=self:canonical(path)
+ if owner.filename and path==self:canonical(owner.filename) then E.raise('E1088','Script cannot import itself',n) end
+ if owner.imports[path] then E.raise('E1262','Cannot import the same script twice',n) end
+ if owner.cells[alias] then
+  local prior=owner.cells[alias].value
+  if not (owner.reloadable and owner.reloadable[alias] and prior.kind=='module' and prior.data.path==path) then E.raise('E1073','Name already defined: '..alias,n) end
+ end
+ if vim.fn.filereadable(path)==0 then E.raise('E1053','Could not import "'..value.data..'"',n) end
+ local namespace={kind='module',data={path=path}}
+ if not n.autoload then namespace.data.scope=self:load(path,true) end
+ owner:declare(alias,namespace,'final',n);owner.imports[path]=true
+end
+function State:exportcell(object,key,n)
+ if key.kind~='string' then E.raise('E1048','Expected exported item name',n) end
+ local scope=object.data.scope or self:load(object.data.path,true);object.data.scope=scope
+ local cell=scope.cells[key.data]
+ if not cell then E.raise('E1048','Item not found in script: '..key.data,n) end
+ if not scope.exports[key.data] then E.raise('E1049','Item not exported in script: '..key.data,n) end
+ return cell,scope
+end
+function State:index(object,key,n)
+ if object.kind=='module' then return self:exportcell(object,key,n).value end
+ return V.index(object,key)
+end
+function State:setindex(object,key,value,n)
+ if object.kind=='module' then local _,scope=self:exportcell(object,key,n);scope:set(key.data,value,n)
+ else V.setindex(object,key,value) end
+end
+
 function State:tick(node)
  self.steps=self.steps+1
  if self.steps>self.limit then E.unsupported('Execution step budget exhausted',node) end
@@ -39,7 +119,7 @@ function State:setname(name,x,env,node,declare,mode)
   if x.kind~='list' then E.raise('E714','List required',node) end;self.special.errors=x
  elseif name:sub(1,2)=='v:' then E.unsupported('Assignment to '..name,node)
  else
-  if name:sub(1,2)=='s:' then name=name:sub(3);env=self.root end
+  if name:sub(1,2)=='s:' then name=name:sub(3);env=self:script(env) end
   if declare then env:declare(name,x,mode,node) else env:set(name,x,node) end
  end
 end
@@ -77,7 +157,7 @@ function State:call(f,args,env,node)
  if not ok then error(result,0) end
  return result
 end
-function State:expr(n,env)
+function State:expr(n,env,namespace)
  self:tick(n)
  local k=n.tag
  if k=='literal' then
@@ -91,7 +171,10 @@ function State:expr(n,env)
  elseif k=='interpolate' then
   local text=n.value:gsub('{([^{}]+)}',function(expr) return V.text(self:expr(require('vim9.parser').expression(expr),env)) end)
   return V.string(text)
- elseif k=='name' then return self:lookup(n.name,env,n)
+ elseif k=='name' then
+  local value=self:lookup(n.name,env,n)
+  if value.kind=='module' and not namespace then E.raise('E1060','Expected dot after name: '..n.name,n) end
+  return value
  elseif k=='list' then local xs={};for _,x in ipairs(n.items) do xs[#xs+1]=self:expr(x,env) end;return V.list(xs)
  elseif k=='dict' then local xs={};for _,x in ipairs(n.items) do xs[x.key]=self:expr(x.value,env) end;return V.dict(xs)
  elseif k=='unary' then
@@ -114,7 +197,7 @@ function State:expr(n,env)
   if k=='method' then xs[1]=self:expr(n.object,env) end
   for _,a in ipairs(n.args) do xs[#xs+1]=self:expr(a,env) end
   return self:call(f,xs,env,n)
- elseif k=='index' then return V.index(self:expr(n.object,env),self:expr(n.index,env))
+ elseif k=='index' then return self:index(self:expr(n.object,env,true),self:expr(n.index,env),n)
  elseif k=='slice' then
   local x=self:expr(n.object,env);local xs=x.data
   if x.kind=='string' then xs=vim.fn.split(x.data,'\\zs') end
@@ -132,29 +215,36 @@ function State:assign(n,env)
  local x=self:expr(n.value,env)
  local target=n.target;local object,key,old
  if target.tag=='name' then if n.op~='=' then old=self:lookup(target.name,env,target) end
- elseif target.tag=='index' then object=self:expr(target.object,env);key=self:expr(target.index,env);if n.op~='=' then old=V.index(object,key) end
+ elseif target.tag=='index' then object=self:expr(target.object,env,true);key=self:expr(target.index,env);if n.op~='=' then old=self:index(object,key,n) end
  else E.unsupported('Assignment target '..target.tag,n) end
  if n.op~='=' then x=V.binary(n.op:sub(1,-2),old,x) end
- if target.tag=='name' then self:setname(target.name,x,env,n) else V.setindex(object,key,x) end
+ if target.tag=='name' then self:setname(target.name,x,env,n) else self:setindex(object,key,x,n) end
 end
 function State:block(body,env)
  for _,n in ipairs(body) do
   local ok,signal=pcall(function() return self:statement(n,env) end)
-  if not ok then if type(signal)=='table' and not signal.line then signal.line=n.line end;error(signal,0) end
+  if not ok then if type(signal)=='table' then signal.line=signal.line or n.line;signal.filename=signal.filename or self:script(env).filename end;error(signal,0) end
   if signal then return signal end
  end
 end
 function State:statement(n,env)
  self:tick(n);local k=n.tag
- if k=='vim9script' or k=='defcompile' then return end
- if k=='declare' then self:setname(n.name,n.value and self:expr(n.value,env) or V.default(n.annotation),env,n,true,n.mode)
+ if k=='vim9script' then self:script(env).vim9=true;return end
+ if k=='defcompile' then return end
+ if k=='import' then self:import(n,env)
+ elseif k=='source' then self:load(n.path,false)
+ elseif k=='export' then
+  local script=self:script(env)
+  if env~=script or not script.vim9 then E.raise('E1042','Export can only be used at script level',n) end
+  self:statement(n.declaration,env);script.exports[n.declaration.name]=true
+ elseif k=='declare' then self:setname(n.name,n.value and self:expr(n.value,env) or V.default(n.annotation),env,n,true,n.mode)
  elseif k=='assign' then self:assign(n,env)
  elseif k=='expression' then self:expr(n.value,env)
  elseif k=='function' then
   local name=n.name;local scope=env
   -- Named defs in conditional blocks belong to the enclosing script/function.
   while scope.kind=='block' and scope.parent do scope=scope.parent end
-  if name:sub(1,2)=='s:' then name=name:sub(3);scope=self.root end
+  if name:sub(1,2)=='s:' then name=name:sub(3);scope=self:script(env) end
   local f=V.func({name=name,node=n,env=env})
   if name:sub(1,2)=='g:' then self.globals[name:sub(3)]=f else scope:declare(name,f,'final',n) end
  elseif k=='return' then return {kind='return',value=n.value and self:expr(n.value,env) or V.void}
@@ -194,7 +284,7 @@ function State:statement(n,env)
   local in_function=false;local scope=env
   while scope do if scope.kind=='function' then in_function=true;break end;scope=scope.parent end
   if not ok and type(result)=='table' and result.kind=='vim' and not (result.bypass_script_catch and not in_function) then
-   self.special.exception=V.string(result.message);self.special.throwpoint=V.string((self.filename or '[script]')..', line '..(result.line or n.line))
+   self.special.exception=V.string(result.message);self.special.throwpoint=V.string((result.filename or self:script(env).filename or '[script]')..', line '..(result.line or n.line))
    for _,c in ipairs(n.catches) do
     if not c.pattern or vim.fn.match(result.message,c.pattern)>=0 then
      ok,result=pcall(function() return self:block(c.body,Env.new(env)) end);break
@@ -227,7 +317,8 @@ end
 function M.new(opts)
  opts=opts or {};local state=setmetatable({steps=0,limit=opts.step_limit or 1000000,depth=0,maxdepth=100,
   assertions={},messages={},globals={},filename=opts.filename,special={}},State)
- state.root=Env.new(nil,'script')
+ state.modules={};state.runtimepath=opts.runtimepath or vim.opt.runtimepath:get();state.root=Env.new(nil,'script');state.root.exports={};state.root.imports={};state.root.filename=opts.filename
+ if opts.filename then state.modules[state:canonical(opts.filename)]=state.root end
  state.special={['true']=V.bool(true),['false']=V.bool(false),none=V.none,null=V.null,
   exception=V.string(''),throwpoint=V.string(''),errors=V.list()}
  local ts={number=0,string=1,func=2,list=3,dict=4,float=5,bool=6,none=7,blob=10}

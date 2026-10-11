@@ -25,4 +25,10 @@ regression: regression-fixtures
 	$(NVIM) --headless -u NONE -l scripts/m0.lua regression
 unit:
 	$(NVIM) --headless -u NONE -l tests/unit.lua
-test: unit selftest differential m12 regression
+test: unit selftest differential m12 regression m3
+
+.PHONY: m3 m3-fixtures
+m3-fixtures:
+	$(NVIM) --headless -u NONE -l scripts/m3-fixtures.lua
+m3: m3-fixtures
+	$(NVIM) --headless -u NONE -l scripts/m0.lua m3

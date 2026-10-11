@@ -15,8 +15,9 @@ function Env:get(name,node)
 end
 function Env:declare(name,value,mode,node)
   local old=self.cells[name]
-  if old and not self.repeating then E.raise('E1041','Redefining script item: '..name,node) end
-  if old then old.value=value else self.cells[name]={value=value,mode=mode or 'var'} end
+  if old and not self.repeating and not (self.reloadable and self.reloadable[name]) then E.raise('E1041','Redefining script item: '..name,node) end
+  if self.reloadable then self.reloadable[name]=nil end
+  if old then old.value=value;old.mode=mode or 'var' else self.cells[name]={value=value,mode=mode or 'var'} end
   if mode=='const' then V.lock(value) end
 end
 function Env:set(name,value,node)

@@ -1,0 +1,23 @@
+vim9script noclear
+g:loadCount += 1
+var reloaded = 'init'
+import './XExportReload' as exp
+
+def Again(): string
+  return 'again'
+enddef
+
+exp.TheFunc()
+
+if exists('loaded') | finish | endif
+var loaded = true
+
+var notReloaded = 'yes'
+reloaded = 'first'
+def g:Values(): list<string>
+  return [reloaded, notReloaded, Again(), Once(), exp.exported]
+enddef
+
+def Once(): string
+  return 'once'
+enddef

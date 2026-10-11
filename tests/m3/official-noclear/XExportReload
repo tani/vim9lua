@@ -1,0 +1,5 @@
+vim9script
+export var exported = 'thexport'
+
+export def TheFunc(x = 0)
+enddef

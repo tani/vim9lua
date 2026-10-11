@@ -161,10 +161,15 @@ local function differential(manifest,report)
     local source=read(path(f.file))
     assert(vim.fn.sha256(source)==f.sha256,'Fixture content differs from manifest')
     local script=tmp..'/case.vim'; write(script,source)
+    for _,support in ipairs(f.support_files or {}) do
+      local text=read(path(support.file));assert(vim.fn.sha256(text)==support.sha256,'Support fixture differs from manifest')
+      write(tmp..'/'..support.name,text)
+    end
+    if f.support_files then vim.fn.mkdir(tmp..'/sub','p') end
     local output=tmp..'/reference.json'
     local wrapper=tmp..'/run.vim'
     write(wrapper, table.concat({
-      'set nocp nomore', 'let v:errors = []', 'let g:exception = ""', 'let g:throwpoint = ""',
+      'set nocp nomore', f.support_files and ("execute 'set rtp^=' .. fnameescape("..vim.fn.string(tmp..'/rtp')..")") or '', 'let v:errors = []', 'let g:exception = ""', 'let g:throwpoint = ""',
       'try', "execute 'source ' .. fnameescape("..vim.fn.string(script)..")", 'catch',
       'let g:exception = v:exception', 'let g:throwpoint = v:throwpoint', 'endtry',
       "call writefile([json_encode({'assertions': v:errors, 'exception': g:exception, 'throwpoint': g:throwpoint})], "..vim.fn.string(output)..")",'qa!'},'\n'))
@@ -176,7 +181,7 @@ local function differential(manifest,report)
       ref.status= #ref.observation.assertions==0 and ref.observation.exception=='' and 'PASS' or 'FAIL'
     end
     local candidate_output=tmp..'/candidate.json'
-    json(tmp..'/request.json',{root=root,source=source,filename=f.file,output=candidate_output})
+    json(tmp..'/request.json',{root=root,source=source,filename=f.support_files and script or f.file,output=candidate_output,runtimepath=f.support_files and {tmp..'/rtp'} or nil})
     local c=process({vim.v.progpath,'--headless','-u','NONE','-i','NONE','-l',path('tests/candidate.lua'),tmp..'/request.json'}, {cwd=tmp})
     local candidate={status='HARNESS_ERROR',reason=c.stderr,exit_code=c.code}
     if c.code==0 and vim.fn.filereadable(candidate_output)==1 then
@@ -193,7 +198,7 @@ local function differential(manifest,report)
     results[#results+1]={id=f.id,fixture=f,reference=ref,candidate=candidate,status=status}
     vim.fn.delete(tmp,'rf')
   end
-  json(path(report or 'reports/differential.json'),{scope=manifest and (manifest:match('regression') and 'Authored semantic regressions; not upstream tests' or 'Selected official M1/M2 cases; not whole-suite conformance') or 'Number fixtures only; not whole-suite conformance',results=results})
+  json(path(report or 'reports/differential.json'),{scope=manifest and (manifest:match('regression') and 'Authored semantic regressions; not upstream tests' or (manifest:match('/m3/') and 'Selected official-derived and authored multi-file M3 cases; not whole-suite conformance' or 'Selected official M1/M2 cases; not whole-suite conformance')) or 'Number fixtures only; not whole-suite conformance',results=results})
   for _,r in ipairs(results) do print(r.id..': reference='..r.reference.status..', emulator='..r.status) end
   for _,r in ipairs(results) do if r.status=='HARNESS_ERROR' or r.status=='FAIL' or (manifest and r.status~='PASS') then return false end end
   return true
@@ -209,7 +214,7 @@ local function selftest()
   assert(lpeg.match(P('vim9script') * -P(1),'vim9script'))
   print('Harness classification and LPeg checks passed')
 end
-local commands={regression=function() return differential('tests/regression/manifest.json','reports/regression.json') end,m12=function() return differential('tests/m12/manifest.json','reports/m12.json') end,lock=lock,inventory=inventory,fixture=fixture,reference=reference,differential=differential,selftest=selftest}
+local commands={m3=function() return differential('tests/m3/manifest.json','reports/m3.json') end,regression=function() return differential('tests/regression/manifest.json','reports/regression.json') end,m12=function() return differential('tests/m12/manifest.json','reports/m12.json') end,lock=lock,inventory=inventory,fixture=fixture,reference=reference,differential=differential,selftest=selftest}
 local function main()
 verify()
 local command=arg[1] or 'help'

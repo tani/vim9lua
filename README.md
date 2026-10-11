@@ -25,8 +25,21 @@ assert(result.status == 'PASS')
 ```
 
 `parse(source, opts)` returns the AST. `source(filename, opts)` runs a file.
-Each `run` creates isolated script/global state. Persistent modules, automatic
-`:source` interception and editor integration belong to later milestones.
+Each top-level `run` or `source` creates isolated state. Use `new(opts)` for a
+persistent session whose `run` and `source` methods share globals and modules:
+
+```lua
+local session = require('vim9').new({ runtimepath = { '/path/to/plugin' } })
+local result = session:source('/path/to/plugin/main.vim')
+assert(result.status == 'PASS')
+```
+
+`session:run(text, {filename = absolute_path})` executes text with a fresh script
+scope and preserves the session's globals/module cache. Provide an absolute
+filename for relative imports. `session:source(path)` rereads a file. The session
+retains `v:errors`, messages and its cumulative step count; create a new session
+for isolation. These APIs execute the emulator and do not register Neovim
+`:source` hooks.
 The result contains a status, assertion/exception observations, emitted messages
 and an execution step count. Unsupported features are explicit `UNSUPPORTED`.
 The default execution budget is 1,000,000 AST steps and is configurable with
@@ -58,7 +71,33 @@ Vim conformance, and not a claim that all tests within their parent functions pa
 One regression intentionally throws: passing means both implementations produce
 its expected uncaught exception. Unit checks additionally verify failed assertions,
 annotation retention/erasure, execution budgets, isolated runs and unsupported
-features. `make test` fails if any selected M1/M2 case is unsupported or fails.
+features. `make test` fails if any selected case is unsupported or fails.
+
+## M3
+
+Implemented script scopes and modules with live exported cells:
+
+- `export var`, `const`, `final` and `def`; private names stay private, exported
+  variables can be assigned, and exported functions retain their defining scope.
+- Expression filenames, optional `as` aliases, relative/absolute paths and
+  `runtimepath` lookup in `import/` (excluding `after/`). Canonical paths share
+  the import cache; duplicate/self imports and conflicting names raise errors.
+- `import autoload` looks in `autoload/` or resolves relative/absolute paths,
+  deferring execution until an exported item is accessed. Cyclic imports can
+  refer to items already defined by the other script.
+- Emulator `source` and `execute 'source ...'`, `finish`, ordinary reloading and
+  `vim9script noclear`. `noclear` preserves declarations not reached on reload
+  and permits reached declarations/imports to be redefined once.
+- `exists('alias.item')`, imported method calls and persistent session APIs.
+
+**M3 validation: 18 multi-file differential cases pass**, comprising 3 selected
+cases derived from official import/reload tests and 15 authored regressions.
+The unchanged M1/M2 checks still pass. Additional API unit checks cover session
+isolation, persistent globals, function references and source error filenames.
+These are selected cases, not whole-suite conformance. The M3 manifest records
+upstream line ranges and hashes for the official-derived cases and labels the
+separately authored cases. Fixture files are staged together in a temporary
+working directory for both implementations.
 
 ## Reproduce
 
@@ -74,7 +113,7 @@ Vim with huge features, without GUI/X/NLS. A local linker symlink supports this
 image's runtime-only libtinfo. Other platforms need a separate bootstrap profile.
 
 Additional targets: `make m0` reruns the original reference suites;
-`make m12`, `make regression`, `make unit`, `make differential` run individual
+`make m12`, `make m3`, `make regression`, `make unit`, `make differential` run individual
 checks. `make inventory` refreshes the lexical test inventory.
 
 All emulator and conformance tooling is Lua. The shell script only fetches/builds
@@ -103,9 +142,14 @@ or whole Vim9 suite has been run on the emulator.
 Static type checks, type-directed conversions, compile-time name resolution,
 exact diagnostic text/throwpoint stacks and validation timing remain deferred.
 The parser is eager, so parsing/unsupported diagnostics can precede execution.
-Module import/export/autoload, general legacy Vimscript, heredoc execution,
-editor state/commands, options, mappings, autocmds, host I/O, jobs and timers are
-not implemented. Undefined supported variables produce Vim errors; known but
+General legacy Vimscript, heredoc execution, editor state/commands, options,
+mappings, autocmds, general host I/O, jobs and timers are not implemented.
+Module loading uses host file/path operations and `getcwd()`; these are the
+selected filesystem capabilities. Source filenames currently use literal
+unescaped paths (or an `execute`-built command), without expansion/modifiers.
+Legacy autoload `name#Function` publication, `<SID>` mappings, script IDs and
+editor-triggered loading remain deferred. Compilation-time autoload access and
+reload type/function-signature validation are also deferred. Undefined supported variables produce Vim errors; known but
 unimplemented host builtins produce `UNSUPPORTED`.
 
 Immutable global declarations, computed dictionary keys, complex interpolation,
@@ -124,7 +168,8 @@ ranges, original heredoc lines, dependencies, wrapper contexts and checksums.
 snippet. Setup adapts legacy global declarations to the selected context; snippet
 statements and direct test/helper definitions remain unchanged.
 
-`reports/m12.json`, `reports/regression.json`, `reports/differential.json` contain
+`reports/m3.json`, `reports/m12.json`, `reports/regression.json`,
+`reports/differential.json` contain
 paired observations. `reports/reference.json` retains M0's full reference logs.
 `reports/inventory.json` and `reports/tests.tsv` contain 5,434 lexical declaration
 candidates across 265 test files, and 3,058 helper call sites. Those candidates

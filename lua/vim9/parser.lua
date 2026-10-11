@@ -123,6 +123,7 @@ function Parser:expr(min)
   elseif t.text=='->' then
    self:take();self:nl();local callee=self:primary()
    if callee.tag~='name' and callee.tag~='lambda' then E.unsupported('Method callee',t) end
+   while self:accept('.') do local key=self:identifier();callee=node('index',t,{object=callee,index=node('literal',t,{kind='string',value=key})}) end
    x=node('method',t,{object=x,callee=callee,args=self:args()})
   elseif t.text=='??' and min<=0 then
    self:white(t);self:take();x=node('coalesce',t,{left=x,right=self:expr()})
@@ -149,7 +150,7 @@ end
 function Parser:statement()
  local t=self:peek();local k=t.text
  if k=='vim9script' or k=='defcompile' then
-  self:take();return node(k,t)
+  self:take();return node(k,t,{noclear=k=='vim9script' and self:accept('noclear')~=nil})
  elseif k=='var' or k=='const' or k=='final' then
   self:take();local name=self:identifier();local annotation,value
   if name:sub(-1)==':' then name=name:sub(1,-2);annotation=self:type({['=']=true})
@@ -213,7 +214,19 @@ function Parser:statement()
   return node('unlet',t,{names=names})
  elseif k=='{' then
   self:take();self:endline();local body=self:block({['}']=true});self:take('}');return node('block',t,{body=body})
- elseif k=='import' or k=='export' or k=='func' or k=='function' or k=='autocmd' or k=='set' then E.unsupported('Statement '..k,t)
+ elseif k=='import' then
+  self:take();local autoload=self:accept('autoload')~=nil;local path=self:expr();local mark=self.pos;self:nl();if not self:is('as') then self.pos=mark end;local alias
+  if self:accept('as') then alias=self:identifier() end
+  return node('import',t,{path=path,alias=alias,autoload=autoload})
+ elseif k=='export' then
+  self:take();local declaration=self:statement()
+  if declaration.tag~='declare' and declaration.tag~='function' then E.raise('E1043','Invalid command after :export',t) end
+  return node('export',t,{declaration=declaration})
+ elseif k=='source' then
+  self:take();local first=self:peek().start;local last=first
+  while self:peek().kind~='newline' and self:peek().kind~='eof' and not self:is('|') do last=self:take().finish end
+  return node('source',t,{path=self.source:sub(first,last-1)})
+ elseif k=='func' or k=='function' or k=='autocmd' or k=='set' then E.unsupported('Statement '..k,t)
  end
  if k=='call' or k=='eval' or k=='let' then self:take() end
  local x=self:expr()
