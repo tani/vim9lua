@@ -3,7 +3,7 @@ local E=require('vim9.errors')
 local Parser={}; Parser.__index=Parser
 local M={}
 local prec={['||']=1,['&&']=2,['==']=3,['!=']=3,['==#']=3,['==?']=3,['!=#']=3,['!=?']=3,
- ['is']=3,['isnot']=3,['=~']=3,['!~']=3,['=~#']=3,['=~?']=3,['!~#']=3,['!~?']=3,
+ ['is']=3,['isnot']=3,['is#']=3,['is?']=3,['isnot#']=3,['isnot?']=3,['=~']=3,['!~']=3,['=~#']=3,['=~?']=3,['!~#']=3,['!~?']=3,
  ['<']=3,['>']=3,['<=']=3,['>=']=3,['+']=4,['-']=4,['..']=4,['*']=5,['/']=5,['%']=5}
 local assignment={['=']=true,['+=']=true,['-=']=true,['*=']=true,['/=']=true,['%=']=true,['..=']=true}
 local function node(tag,t,fields) fields=fields or {};fields.tag=tag;fields.line=t.line;fields.column=t.column;return fields end
@@ -17,6 +17,7 @@ function Parser:accept(x) if self:is(x) then return self:take() end end
 function Parser:nl() while self:peek().kind=='newline' do self:take() end end
 function Parser:separators() while self:peek().kind=='newline' or self:is('|') do self:take() end end
 function Parser:white(t)
+ if self.dialect=='legacy' then return end
  if not self.source:sub(t.start-1,t.start-1):match('%s') or not self.source:sub(t.finish,t.finish):match('%s') then
   E.raise('E1004',"White space required before and after '"..t.text.."'",t)
  end
@@ -49,7 +50,46 @@ function Parser:params(close)
  until false end
  self:take(close);return ps
 end
+function Parser:legacyparams()
+ local ps,seen={},{}
+ if not self:is(')') then repeat
+  local t=self:peek()
+  if self:accept('...') then
+   ps[#ps+1]={name='000',vararg=true,line=t.line}
+   if not self:is(')') then E.raise('E15','Variadic argument must be last',t) end
+   break
+  end
+  local name=self:identifier()
+  if not name:match('^[A-Za-z_][A-Za-z_0-9]*$') then E.raise('E125','Illegal argument: '..name,t) end
+  if seen[name] then E.raise('E853','Duplicate argument name: '..name,t) end
+  seen[name]=true;ps[#ps+1]={name=name,line=t.line}
+  if self:is('=') or self:is(':') then E.unsupported('Legacy argument defaults and types',self:peek()) end
+  if not self:accept(',') then break end
+ until false end
+ self:take(')');return ps
+end
+function Parser:identitytoken()
+ local t=self:peek()
+ if t.kind~='word' then return end
+ local op=t.text:match('^(isnot#)') or t.text:match('^(is#)')
+ if op then
+  local start=t.start+#op
+  if start<t.finish then
+   local finish=self.source:find('[\r\n]',start) or (#self.source+1)
+   local tail=L.lex(self.source:sub(start,finish-1),{dialect=self.dialect,expression=true})
+   local nexttoken=tail[1]
+   nexttoken.start=nexttoken.start+start-1;nexttoken.finish=nexttoken.finish+start-1
+   nexttoken.line=t.line;nexttoken.column=t.column+#op
+   while self.tokens[self.pos+1] and self.tokens[self.pos+1].start<nexttoken.finish do table.remove(self.tokens,self.pos+1) end
+   table.insert(self.tokens,self.pos+1,nexttoken)
+  end
+  t.text=op;t.kind='op';t.finish=start
+ elseif (t.text=='is' or t.text=='isnot') and self:peek(1).text=='?' and self:peek(1).start==t.finish then
+  t.text=t.text..'?';t.finish=self:peek(1).finish;table.remove(self.tokens,self.pos+1)
+ end
+end
 function Parser:lambda(t,params,annotation)
+ if self.dialect=='legacy' then E.unsupported('Vim9 lambda in legacy context',t) end
  self:take('=>');self:nl()
  if self:accept('{') then
   self:separators();local body=self:block({['}']=true});self:take('}')
@@ -106,7 +146,9 @@ function Parser:args()
 end
 function Parser:expr(min)
  min=min or 0;local x=self:primary()
+ self:identitytoken()
  while true do
+  self:identitytoken()
   local t=self:peek()
   -- A continuation operator can begin the next line.
   if t.kind=='newline' then
@@ -131,6 +173,7 @@ function Parser:expr(min)
   elseif t.text=='?' and min<=0 then
    self:take();local yes=self:expr();self:nl();self:take(':');local no=self:expr();x=node('ternary',t,{cond=x,yes=yes,no=no})
   elseif prec[t.text] and prec[t.text]>=min then
+   if self.dialect=='vim9' and t.text:match('^is') and t.text:match('[#?]$') then E.raise('E15','Identity suffix is not allowed in Vim9',t) end
    self:white(t);self:take();local y=self:expr(prec[t.text]+1);x=node('binary',t,{op=t.text,left=x,right=y})
   else break end
  end
@@ -151,20 +194,48 @@ end
 function Parser:statement()
  local t=self:peek();local k=t.text
  if k=='vim9script' or k=='defcompile' then
-  self:take();return node(k,t,{noclear=k=='vim9script' and self:accept('noclear')~=nil})
+  self:take();if k=='vim9script' then self.dialect='vim9' end
+  return node(k,t,{noclear=k=='vim9script' and self:accept('noclear')~=nil})
  elseif k=='++' or k=='--' then
+  if self.dialect=='legacy' then E.unsupported('Legacy increment command',t) end
   self:take();return node('assign',t,{target=self:expr(6),op=k=='++' and '+=' or '-=',value=node('literal',t,{kind='number',value='1'})})
  elseif k=='var' or k=='const' or k=='final' then
+  if self.dialect=='legacy' then E.unsupported('Vim9 declaration in legacy context',t) end
   self:take();local name=self:identifier();local annotation,value
   if name:sub(-1)==':' then name=name:sub(1,-2);annotation=self:type({['=']=true})
   elseif self:accept(':') then annotation=self:type({['=']=true}) end
-  if self:accept('=') then value=self:expr() end
+  if self:is('=') then self:white(self:peek());self:take();value=self:expr() end
   return node('declare',t,{name=name,mode=k,annotation=annotation,value=value})
  elseif k=='def' then
   self:take();local name=self:identifier();self:take('(');local ps=self:params(')');local annotation
   if self:accept(':') then annotation=self:type({}) end
-  self:endline();local body=self:block({enddef=true});self:take('enddef')
-  return node('function',t,{name=name,params=ps,annotation=annotation,body=body})
+  local outer=self.dialect;self.dialect='vim9'
+  self:endline();local body=self:block({enddef=true});self:take('enddef');self.dialect=outer
+  return node('function',t,{name=name,params=ps,annotation=annotation,body=body,dialect='vim9'})
+ elseif k=='function' or k=='func' then
+  self:take();local replace=self:accept('!')~=nil;local name=self:identifier();self:take('(')
+  local unqualified=name:gsub('^[gs]:','')
+  if name:match('^[^gs]:') then E.unsupported('Legacy function scope '..name,t) end
+  if name:sub(1,2)~='s:' and not unqualified:match('^[A-Z]') and not unqualified:find('#',1,true) then E.raise('E128','Function name must start with a capital or "s:": '..name,t) end
+  if unqualified:find('#',1,true) then E.unsupported('Autoload function definitions',t) end
+  local ps=self:legacyparams()
+  if self:peek().kind~='newline' and self:peek().kind~='eof' and not self:is('|') then E.unsupported('Legacy function attributes',self:peek()) end
+  local outer=self.dialect;self.dialect='legacy';self:endline()
+  local body=self:block({endfunction=true,endfunc=true})
+  if not self:accept('endfunction') then self:take('endfunc') end
+  self.dialect=outer
+  return node('function',t,{name=name,params=ps,body=body,dialect='legacy',replace=replace})
+ elseif k=='set' then
+  self:take();local raw=self:take();if raw.kind~='setargs' then E.unsupported('Set arguments',raw) end
+  local operations={}
+  for part in raw.text:gmatch('%S+') do
+   local name,op,value=part:match('^([A-Za-z_][A-Za-z_0-9]*)([+^%-]?=)(.*)$')
+   if not name then name=part:match('^([A-Za-z_][A-Za-z_0-9]*)$');op='show' end
+   if not name then E.unsupported('Set form '..part,t) end
+   operations[#operations+1]={name=name,op=op,value=value}
+  end
+  if #operations==0 then E.unsupported('Set without arguments',t) end
+  return node('set',t,{operations=operations})
  elseif k=='if' then
   self:take();local cond=self:expr();self:endline();local branches={}
   branches[#branches+1]={cond=cond,body=self:block({elseif_=true,['elseif']=true,['else']=true,endif=true})}
@@ -212,6 +283,7 @@ function Parser:statement()
   repeat args[#args+1]=self:expr() until self:peek().kind=='newline' or self:peek().kind=='eof' or self:is('|')
   return node(k=='exe' and 'execute' or k,t,{args=args})
  elseif k=='unlet' then
+  if self.dialect=='legacy' then E.unsupported('Legacy unlet',t) end
   self:take();local names={}
   repeat names[#names+1]=self:identifier() until self:peek().kind=='newline' or self:peek().kind=='eof' or self:is('|')
   return node('unlet',t,{names=names})
@@ -229,20 +301,25 @@ function Parser:statement()
   self:take();local first=self:peek().start;local last=first
   while self:peek().kind~='newline' and self:peek().kind~='eof' and not self:is('|') do last=self:take().finish end
   return node('source',t,{path=self.source:sub(first,last-1)})
- elseif k=='func' or k=='function' or k=='autocmd' or k=='set' then E.unsupported('Statement '..k,t)
+ elseif k=='autocmd' then E.unsupported('Statement '..k,t)
  end
  if k=='call' or k=='eval' or k=='let' then self:take() end
  local x=self:expr()
- if assignment[self:peek().text] then self:white(self:peek());local op=self:take().text;return node('assign',t,{target=x,op=op,value=self:expr()}) end
+ if self.dialect=='legacy' and assignment[self:peek().text] and k~='let' then E.unsupported('Legacy assignment without let',t) end
+ if self.dialect=='legacy' and k~='let' and k~='call' and k~='eval' then E.unsupported('Legacy expression command',t) end
+ if assignment[self:peek().text] then self:white(self:peek());local op=self:take().text;return node('assign',t,{target=x,op=op,value=self:expr(),legacy_let=k=='let' and self.dialect=='legacy'}) end
+ if self.dialect=='legacy' and k=='let' then E.unsupported('Legacy let listing or destructuring',t) end
  return node('expression',t,{value=x})
 end
 function M.parse(source,opts)
- local p=setmetatable({tokens=L.lex(source),pos=1,source=source},Parser)
+ opts=opts or {};local dialect=opts.dialect or 'vim9'
+ local p=setmetatable({tokens=L.lex(source,{dialect=dialect,preamble=not opts.dialect}),pos=1,source=source,dialect=dialect},Parser)
  local body=p:block({})
- return {tag='script',body=body,filename=opts and opts.filename}
+ return {tag='script',body=body,filename=opts.filename,dialect=dialect}
 end
-function M.expression(source)
- local p=setmetatable({tokens=L.lex(source),pos=1,source=source},Parser)
+function M.expression(source,opts)
+ opts=opts or {};local dialect=opts.dialect or 'vim9'
+ local p=setmetatable({tokens=L.lex(source,{dialect=dialect,expression=true}),pos=1,source=source,dialect=dialect},Parser)
  local x=p:expr();p:nl();if p:peek().kind~='eof' then E.raise('E15','Trailing expression',p:peek()) end;return x
 end
 return M

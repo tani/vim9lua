@@ -125,21 +125,30 @@ local function main()
    end
   end
  end
- -- Reserved ingestion format for future original-runner adapters. Unregistered
- -- adapters and incomplete observables cannot increase the whole-test numerator.
+ -- Whole records are independently recomputed; saved booleans cannot confer credit.
  if vim.fn.filereadable(root..'/reports/full-tests.json')==1 then
-  for _,record in ipairs(U.load(root..'/reports/full-tests.json').results or {}) do
-   local test=byid[record.id]
-   if not test then problems[#problems+1]='Unknown full-test result: '..tostring(record.id)
-   else
-    local credited,status=L.credit_whole(record,current,adapters.whole_test_adapters,contract.required_observables)
-    local parent_file=record.id:match('^(.-)::')
-    local suitehash=record.source_sha256==hash(parent_file)
-    local parent=discovered[parent_file]
-    if not parent or parent.status~='DISCOVERED' or not discovery_fresh then credited,status=false,'BLOCKED_DISCOVERY' end
-    if credited and not suitehash then credited,status=false,'STALE' end
-    test.whole_result=status
-    if credited then test.candidate_status='EQUIVALENT' end
+  local full=optional('reports/full-tests.json')
+  if type(full)~='table' or full.schema_version~=1 or type(full.results)~='table' or not vim.islist(full.results) then
+   problems[#problems+1]='Invalid whole-test report schema'
+  else
+   local counts={}
+   for _,record in ipairs(full.results) do
+    if type(record)=='table' and type(record.id)=='string' then counts[record.id]=(counts[record.id] or 0)+1 end
+   end
+   for _,record in ipairs(full.results) do
+    local id=type(record)=='table' and record.id
+    local test=type(id)=='string' and byid[id]
+    if not test then problems[#problems+1]='Unknown or malformed full-test result: '..tostring(id)
+    else
+     local credited,status,checked=L.credit_whole(record,current,adapters.whole_test_adapters,contract.required_observables,{hash=hash})
+     local parent_file=id:match('^(.-)::');local parent=discovered[parent_file]
+     if not parent or parent.status~='DISCOVERED' or not discovery_fresh then credited,status=false,'BLOCKED_DISCOVERY' end
+     if counts[id]~=1 then credited,status=false,'DUPLICATE_WHOLE_RESULT' end
+     test.whole_result=status
+     test.whole_comparison=checked
+     if credited then test.candidate_status='EQUIVALENT'
+     else problems[#problems+1]=status..' whole test: '..id end
+    end
    end
   end
  end

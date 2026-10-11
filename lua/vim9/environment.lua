@@ -4,6 +4,17 @@ local Env={}; Env.__index=Env
 function Env.new(parent,kind)
   return setmetatable({parent=parent,kind=kind or 'block',cells={}},Env)
 end
+function Env:dialect()
+ if self.mode then return self.mode end
+ return self.parent and self.parent:dialect() or 'vim9'
+end
+function Env:functionscope()
+ local scope=self
+ while scope do
+  if scope.kind=='function' then return scope end
+  scope=scope.parent
+ end
+end
 function Env:find(name)
   if self.cells[name] then return self.cells[name],self end
   if self.parent then return self.parent:find(name) end

@@ -67,6 +67,10 @@ assert_equal(9, eval('[8, 9][1]'))
   assert(result.observation.emitted_messages==bracket_stream,'Separated lists must remain echo arguments in scripts and defs')
  end
  local parser=require('vim9.parser')
+ for _,identifier in ipairs({'is#Helper','isnot#Helper','is1','isnot1'}) do
+  local parsed_identifier=parser.expression(identifier..'()',{dialect='legacy'})
+  assert(parsed_identifier.callee.name==identifier,'Identity operators must not split primary identifiers')
+ end
  for _,separator in ipairs({' ','\t'}) do
   local expression='[8, 9]'..separator..'[1]'
   local parsed=pcall(parser.expression,expression)
@@ -120,6 +124,150 @@ assert_equal(9, eval('[8, 9][1]'))
  assert(run_output.observation.emitted_messages==run_stream and source_output.observation.emitted_messages==source_stream,'Snapshots must remain stable after later actions')
  assert(quiet_run.observation.emitted_messages=='' and quiet_source.observation.emitted_messages=='','Empty snapshots must remain stable')
  assert(#failure_output.messages==9,'All actions must retain the cumulative messages API')
+ local V=require('vim9.values')
+ local legacy=api.new()
+ local comparator=root..'/upstream/vim/src/testdir/test_comparators.vim'
+ local initial=legacy:getoption('isident')
+ assert(initial=='@,48-57,_,192-255' and legacy:getoption('isi')==initial)
+ pass(legacy:source(comparator))
+ assert(legacy:getoption('isident')==initial,'Source must only register the original function')
+ for _=1,2 do
+  local called=legacy:call('Test_Comparators');pass(called)
+  assert(called.value.kind=='number' and V.text(called.value)=='0','Legacy implicit return must be Number zero')
+  assert(legacy:getoption('isident')==initial,'Original finally must restore the real option')
+ end
+ pass(legacy:source(comparator));pass(legacy:call('Test_Comparators'))
+ pass(legacy:run('set isi+=#\nset isident+=#\ncall assert_equal(1,1 is#1)\n',{dialect='legacy'}))
+ assert(legacy:getoption('isi')==initial..',#','String-list append must not duplicate an existing item')
+ local snapshot=legacy:options();snapshot.isident='not the actual value'
+ assert(legacy:getoption('isident')==initial..',#','Option snapshots must not expose mutable state')
+ local independent=api.new();assert(independent:getoption('isident')==initial,'Options must be session-local')
+ pass(legacy:call('Test_Comparators'))
+ assert(legacy:getoption('isident')==initial..',#','Restoration must preserve an initially present item')
+ pass(legacy:run('set isi-=#\nset isi^=#\nset isi^=#\n',{dialect='legacy'}))
+ assert(legacy:getoption('isident')=='#,'..initial)
+ pass(legacy:run('let &isi="@,48-57,_,192-255"\n',{dialect='legacy'}))
+ local unknown=legacy:run('set unsupported_option=yes\n',{dialect='legacy'})
+ assert(unknown.status=='UNSUPPORTED','Unimplemented options must not forward host Ex')
+ local invalid=legacy:run('let &isident="256"\n',{dialect='legacy'})
+ assert(invalid.status=='FAIL' and invalid.observation.exception:match('E474:'))
+ assert(legacy:getoption('isident')==initial,'Invalid assignments must leave the option unchanged')
+ file('legacy.vim',[=[
+" Initial legacy comment with an unmatched quote
+let s:hidden=41
+let globalcell=17
+function LegacyArgs(value,...)
+ let value=2
+ try
+  let localcell=a:value+value
+  let s:hidden=localcell
+ finally
+  call assert_equal(7,localcell)
+  call assert_equal(2,a:0)
+  call assert_equal([8,9],a:000)
+  call assert_equal(8,a:1)
+ endtry
+ return localcell
+endfunction
+func s:Private()
+ return s:hidden
+endfunc
+function LegacyCleanup()
+ try
+  let old=&isi
+  set isi+=#
+  throw "cleanup failure"
+ finally
+  let &isi=old
+  echomsg "cleaned"
+ endtry
+endfunction
+function LegacyText()
+ let text="a \"quoted\" string" " genuine trailing comment
+ call assert_equal('a "quoted" string',text)
+ call assert_equal(1,'a' is?'A')
+ call assert_equal(0,'a' is#'A')
+ call assert_equal(0,1 is#1.0)
+ call assert_equal(0,1 is#v:true)
+ call assert_equal(1,1 isnot#2)
+ call assert_equal(1,1 isnot?2)
+ call assert_equal(0,type(1==1))
+ call assert_equal(1,!0)
+ call assert_equal(1,2&&1)
+ call assert_equal(1,eval('1is#1'))
+ execute 'let dynamic=6'
+ call assert_equal(6,dynamic)
+ return
+endfunction
+function LegacyHelper()
+ return 13
+endfunction
+function LegacyBoundary()
+ let is1=3
+ let isnot1=4
+ call assert_equal(13,LegacyHelper())
+ call assert_equal(3,is1)
+ call assert_equal(4,isnot1)
+endfunction
+def ModernInLegacy(): number
+ # Def comments and expressions are Vim9 even in a legacy file.
+ var result = 1 is 1
+ assert_equal(6, type(result))
+ assert_equal(true, result)
+ assert_equal(6, type(eval('1 is 1')))
+ execute 'var dynamic = 1 is 1'
+ assert_equal(6, type(dynamic))
+ return 23
+enddef
+" Restored legacy comment after def
+]=])
+ local functions=api.new();pass(functions:source(temp..'/legacy.vim'))
+ local argcall=functions:call('LegacyArgs',{V.int(5),V.int(8),V.int(9)});pass(argcall)
+ assert(V.text(argcall.value)=='7')
+ local private=functions:call('s:Private',{}, {filename=temp..'/legacy.vim'});pass(private)
+ assert(V.text(private.value)=='7','Script-local functions must retain defining script cells')
+ pass(functions:call('LegacyText'));pass(functions:call('LegacyBoundary'))
+ local modern_call=functions:call('ModernInLegacy');pass(modern_call)
+ assert(V.text(modern_call.value)=='23','Defs in legacy files must execute with Vim9 semantics')
+ pass(functions:run('vim9script\nassert_equal(17, g:globalcell)\nassert_equal(0, exists("*Private"))\n'))
+ pass(functions:call('LegacyArgs',{V.int(5),V.int(8),V.int(9)}))
+ pass(functions:call('s:Private',{}, {filename=temp..'/legacy.vim'}))
+ assert(functions:call('Private').status=='FAIL','Private functions must not be globally published')
+ local before_cleanup=functions:getoption('isident')
+ local cleanup=functions:call('LegacyCleanup')
+ assert(cleanup.status=='FAIL' and cleanup.observation.exception=='cleanup failure',vim.inspect(cleanup))
+ assert(cleanup.observation.emitted_messages=='\ncleaned' and functions:getoption('isident')==before_cleanup)
+ assert(cleanup.observation.throwpoint==temp..'/legacy.vim, line 24','Calls must retain their defining filename')
+ pass(functions:source(temp..'/legacy.vim'))
+ pass(functions:call('LegacyBoundary'))
+ file('duplicate.vim','function LegacyBoundary()\nendfunction\n')
+ local duplicate=functions:source(temp..'/duplicate.vim')
+ assert(duplicate.status=='FAIL' and duplicate.observation.exception:match('E122:'))
+ file('duplicate.vim','function! LegacyBoundary()\n return 29\nendfunction\n')
+ pass(functions:source(temp..'/duplicate.vim'))
+ local replacement=functions:call('LegacyBoundary');pass(replacement);assert(V.text(replacement.value)=='29')
+ local missing_script=functions:call('s:Private',{}, {filename=temp..'/not-sourced.vim'})
+ assert(missing_script.status=='FAIL' and missing_script.observation.exception:match('E484:'))
+ local argument_write=api.run('function ReadOnly(x)\n let a:x=2\nendfunction\ncall ReadOnly(1)\n',{dialect='legacy'})
+ assert(argument_write.status=='FAIL' and argument_write.observation.exception:match('E46:'))
+ local shadow=api.run('let s:borrowed=1\nfunction NoBorrow()\n return borrowed\nendfunction\ncall NoBorrow()\n',{dialect='legacy'})
+ assert(shadow.status=='FAIL' and shadow.observation.exception:match('E121:'),'Unqualified legacy locals must not borrow script cells')
+ for _,attribute in ipairs({'abort','dict','range','closure'}) do
+  local rejected=api.run('function Unsupported() '..attribute..'\nendfunction\n',{dialect='legacy'})
+  assert(rejected.status=='UNSUPPORTED','Unimplemented legacy attributes must reject explicitly')
+ end
+ for _,program in ipairs({
+  'def Strict()\n var x=1\nenddef\n',
+  'vim9script\nassert_equal(true,1 is#1)\n',
+  'vim9script\nvar x=1\n',
+ }) do
+  local strict=api.run(program,{dialect='legacy'})
+  assert(strict.status=='FAIL','Vim9 whitespace and identity suffix rules must remain strict')
+ end
+ local modes=api.run('" Legacy preamble\nvim9script\n# Vim9 comment\nfunction OldInsideNew()\n let x=1is#1\n call assert_equal(0,type(x))\nendfunction\nOldInsideNew()\nassert_equal(6,type(1 is 1))\n')
+ pass(modes)
+ local tagged=api.run('call assert_equal(1,v:true)\n',{dialect='legacy'})
+ assert(tagged.status=='FAIL' and #tagged.observation.assertions==1,'Legacy comparison numbers must not weaken tagged assertion equality')
  vim.fn.delete(temp,'rf')
  print('Persistent session, emitted-message isolation and snapshots, module closures, source errors, AST annotations, erasure, fuel, isolated runs and unsupported boundary checks passed')
 end

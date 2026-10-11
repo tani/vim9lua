@@ -5,7 +5,7 @@ local M={}
 local alpha=R('az','AZ')+P('_')
 local digit=R('09')
 local bare=alpha*(alpha+digit+P('#'))^0
-local word=S('gbwtslav')*P(':')*bare^-1+bare
+local word=P('a:')*(bare+digit^1)^-1+S('gbwtslv')*P(':')*bare^-1+bare
 local sq=P("'")*(P("''")+(1-S("'\r\n")))^0*P("'")
 local dq=P('"')*(P('\\')*P(1)+(1-S('"\r\n')))^0*P('"')
 local dec=digit*(digit+P("'")*digit)^0
@@ -41,8 +41,23 @@ local function stringvalue(raw)
   end
   return table.concat(out)
 end
-function M.lex(source)
+function M.lex(source,opts)
+  opts=opts or {}
   local tokens={}; local pos,line,column=1,1,1
+  local dialect=opts.dialect or 'vim9'
+  local commandstart,command,pending=true,nil,nil
+  local modes={}
+  local preamble=opts.preamble
+  local function commentquote()
+    if commandstart then return not opts.expression and (dialect=='legacy' or preamble) end
+    if dialect~='legacy' then return false end
+    local previous=tokens[#tokens]
+    if not previous then return true end
+    if previous.kind=='word' and (previous.text=='is' or previous.text=='isnot' or previous.text=='is#' or previous.text=='isnot#') then return false end
+    if command=='echo' or command=='echomsg' or command=='echoerr' or command=='execute' or command=='exe' then return false end
+    if previous.text=='in' or previous.text==command and (command=='return' or command=='throw' or command=='eval' or command=='if' or command=='elseif' or command=='while') then return false end
+    return previous.kind=='number' or previous.kind=='string' or previous.kind=='word' or previous.text==')' or previous.text==']' or previous.text=='}'
+  end
   while pos<=#source do
     local skip=lpeg.match(space,source,pos)
     if skip then column=column+skip-pos; pos=skip
@@ -56,7 +71,7 @@ function M.lex(source)
       if finish>#source then E.raise('E15','Unclosed catch pattern',{line=line}) end
       tokens[#tokens+1]={kind='pattern',text='<pattern>',value=source:sub(pos+1,finish-1),line=line,column=column,start=pos,finish=finish+1}
       column=column+finish+1-pos;pos=finish+1
-    elseif source:sub(pos,pos)=='#' and not source:sub(pos,pos+1):match('^#%[') then
+    elseif (source:sub(pos,pos)=='#' and dialect=='vim9' and not source:sub(pos,pos+1):match('^#%[')) or (source:sub(pos,pos)=='"' and commentquote()) then
       local stop=source:find('\n',pos,true) or (#source+1); column=column+stop-pos; pos=stop
     elseif source:sub(pos,pos)=='\\' and source:sub(pos+1):match('^[ \t]*\r?\n') then
       local stop=source:find('\n',pos,true); pos=stop+1; line=line+1; column=1
@@ -70,8 +85,25 @@ function M.lex(source)
       elseif raw:match('^%d') or raw:match('^%.%d') then kind='number'
       elseif raw:match('^[%a_]') then kind='word' end
       tokens[#tokens+1]={kind=kind,text=raw,value=kind=='string' and stringvalue(raw) or nil,line=line,column=column,start=pos,finish=t[3]}
+      if commandstart and kind=='word' and not opts.expression then
+        command=raw;commandstart=false;preamble=false
+        if raw=='vim9script' then dialect='vim9'
+        elseif raw=='def' or raw=='function' or raw=='func' then
+          modes[#modes+1]=dialect;pending=raw=='def' and 'vim9' or 'legacy'
+        elseif raw=='enddef' or raw=='endfunction' or raw=='endfunc' then
+          dialect=modes[#modes] or dialect;modes[#modes]=nil
+        elseif raw=='set' then
+          local finish=source:find('[\r\n|]',t[3]) or (#source+1)
+          tokens[#tokens+1]={kind='setargs',text=source:sub(t[3],finish-1),line=line,column=column+#raw,start=t[3],finish=finish}
+          t[3]=finish
+        end
+      elseif kind~='newline' then commandstart=false;preamble=false end
+      if kind=='newline' or raw=='|' then
+        if pending then dialect=pending;pending=nil end
+        commandstart=true;command=nil
+      end
       pos=t[3]
-      if kind=='newline' then line=line+1; column=1 else column=column+#raw end
+      if kind=='newline' then line=line+1; column=1 else column=column+t[3]-t[1] end
     end
   end
   tokens[#tokens+1]={kind='eof',text='<eof>',line=line,column=column,start=pos,finish=pos}

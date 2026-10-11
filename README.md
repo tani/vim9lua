@@ -24,9 +24,13 @@ assert_equal(55, Fibonacci(10))
 assert(result.status == 'PASS')
 ```
 
-`parse(source, opts)` returns the AST. `source(filename, opts)` runs a file.
+`parse(source, opts)` and `run(source, opts)` default to Vim9 snippets;
+`opts.dialect = 'legacy'` selects legacy snippet parsing/execution.
+`source(filename, opts)` runs a file starting in legacy mode and switches at
+`vim9script`.
+`def` bodies use Vim9; `function` / `func` bodies use legacy syntax.
 Each top-level `run` or `source` creates isolated state. Use `new(opts)` for a
-persistent session whose `run` and `source` methods share globals and modules:
+persistent session whose `run`, `source` and `call` methods share state:
 
 ```lua
 local session = require('vim9').new({ runtimepath = { '/path/to/plugin' } })
@@ -36,10 +40,17 @@ assert(result.status == 'PASS')
 
 `session:run(text, {filename = absolute_path})` executes text with a fresh script
 scope and preserves the session's globals/module cache. Provide an absolute
-filename for relative imports. `session:source(path)` rereads a file. The session
-retains `v:errors`, messages and its cumulative step count; create a new session
-for isolation. These APIs execute the emulator and do not register Neovim
-`:source` hooks.
+filename for relative imports. `session:source(path)` rereads a file.
+`session:call(name, args, opts)` invokes an already-defined function; `args` defaults
+to `{}` and contains tagged values from `require('vim9.values')`. For an `s:`
+name, `opts.filename` selects an already-sourced script scope; otherwise lookup
+uses the current root scope. Execution retains the function's defining context.
+The call result has the usual observations plus a tagged return `value`.
+`session:getoption('isident')` (also `'isi'`) returns a plain string;
+`session:options()` returns an independent `{ isident = string }` snapshot.
+The session retains `v:errors`, messages and its cumulative step count; create
+a new session for isolation. These APIs execute the emulator and do not register
+Neovim `:source` hooks.
 The result contains a status, assertion/exception observations and an execution
 step count. `observation.emitted_messages` is an immutable string snapshot of
 output emitted by that action; top-level `messages` is the cumulative rendered
@@ -66,6 +77,16 @@ Implemented and tested:
   including `items()` and `isinf()`. Prefix `++` / `--` statements are supported.
   `echo`, `echoerr`, `execute`, `unlet`, `call`, `eval` and `defcompile` syntax.
   `defcompile` is a no-op while static validation remains deferred.
+- A bounded legacy subset: `function` / `func`, `function!`, function-owned
+  local `let`, global/script variables and private functions, read-only `a:`
+  arguments, implicit return `0`, and re-source versus E122 definition handling.
+  Legacy comparisons and logical operators return Numbers; identity between
+  differing value kinds is false. `eval` / `execute` retain their dialect and
+  defining context.
+- Per-session `isident` / `isi`, initialized to pinned Unix `@,48-57,_,192-255`
+  independently of host editor options. String `&` assignment and simple `set`
+  assignment, append, prepend, removal and display use the session backend;
+  duplicate handling follows pinned option semantics on the whole raw payload.
 
 **Current validation: 87 official-derived M1/M2 cases pass differential testing,
 plus 13 authored semantic regression cases.** The number-literal smoke test
@@ -117,6 +138,15 @@ reference-only successes, skips, unknowns and stale results. Sample matches neve
 promote a parent Test_ function to complete equivalence. No global compatibility
 percentage is claimed. Full observables, profiles and adapter obligations are
 specified in [conformance/README.md](conformance/README.md).
+
+The unchanged original `test_comparators` source and complete function body have
+also been exercised through source, two calls, re-source and another call.
+Returns were `0`; actual `isident` append/restoration and bounded assertions,
+exception text and emitted text matched the reference. The unmodified inherited
+runner passed on reference Vim only. Successful complete source/body execution
+is not matching that runner or all nine observable channels: candidate recorder,
+preparation, UI and event obligations remain pending. Whole-test equivalence
+credit remains zero; this observation does not change the selected-case counts.
 
 [LOOP.md](LOOP.md) contains the implementation continuation prompt: select a
 conformance gap, reproduce it, implement and verify it, refresh evidence, save a
@@ -184,8 +214,14 @@ remain debt. Direct List conversion by `execute` also remains an independent
 E730 gap; adjacent-list argument samples do not establish that conversion.
 Classes, interfaces, enums, tuples, generic functions and type aliases introduced
 in later Vim 9 releases remain outside the implemented subset.
-General legacy Vimscript, heredoc execution, editor state/commands, options,
-mappings, autocmds, general host I/O, jobs and timers are not implemented.
+General legacy Vimscript remains outside the bounded subset above. Legacy
+function attributes (`abort`, `dict`, `range`, `closure`), default/type-parameter
+signatures, autoload definitions, scope dictionaries, legacy `unlet` and
+destructuring remain unsupported. Conditions outside Number/Bool remain debt.
+Only string `isident` / `isi` is implemented: other options, non-string option
+values and advanced `set` forms remain unsupported. Heredoc execution, editor
+state/commands, mappings, autocmds, general host I/O, jobs and timers are not
+implemented.
 Module loading uses host file/path operations and `getcwd()`; these are the
 selected filesystem capabilities. Source filenames currently use literal
 unescaped paths (or an `execute`-built command), without expansion/modifiers.

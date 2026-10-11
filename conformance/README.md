@@ -82,14 +82,143 @@ and every required observable. There are currently no such adapters, even for
 direct extracted definitions. Original test-script setup and full observation
 are not demonstrated by copying a complete function definition.
 
-The future full-test ingestion format is `reports/full-tests.json`, with a
-`results` array containing `id` (source path :: Test_ name), `fingerprint`,
-`adapter`, `adapter_sha256`, `source_sha256`, `coverage: "whole"`,
-`reference_status`, `verdict`, and boolean `checks` for each contract observable.
-The adapter must be registered in adapters.json, identify its implementation
-hash, and declare original-runner and preparation compatibility. Unregistered,
-partial, stale or incomplete entries cannot increase the numerator. Adapter
-registration is a reviewed implementation change, not a result-file shortcut.
+### Whole-observation consumer schema
+
+`reports/full-tests.json` is an optional **consumer input**, not an execution
+producer. Its shape is `{ "schema_version": 1, "results": [...] }`. There are no
+registered whole adapters or produced full-test results today. This schema and
+its consumer tests do not establish execution or whole-test equivalence.
+
+Each result contains:
+
+- `id`: unchanged repository-relative source path, `::`, discovered Test_ name.
+- `fingerprint`: the current complete harness fingerprint.
+- `adapter`, `adapter_sha256`, `source_sha256`, `coverage: "whole"`.
+- `reference_status`, `verdict`, `checks`: saved summaries. `checks` must be
+  exactly the nine recomputed boolean keys, with no missing/extra keys. Saved
+  summaries must agree with the raw comparison; even nine `true` values cannot
+  replace observations. Only recomputed MATCH with a PASS reference and PASS
+  candidate can earn credit.
+- `provenance`, `reference`, `candidate`, as specified below.
+
+An entry in `adapters.json.whole_test_adapters` must supply `id`,
+`implementation` (repository-relative implementation file), `sha256` (that
+file's actual bytes), `original_runner: true`, `setup_teardown: true`,
+`dependencies` (nonempty ordered array of `{file, sha256}`), and `lifecycle`
+(the ordered phases below). Dependencies must include
+`upstream/vim/src/testdir/runtest.vim`; registration review must enumerate every
+runner/helper/support/recorder dependency used by the implementation, including
+startup and source-time dependencies, not just the body. If an implementation
+spans files, every additional implementation file belongs in dependencies.
+Registration is a reviewed implementation change, not a result-file shortcut.
+
+Result `provenance` must exactly equal:
+
+```
+{
+  "test_id": "<the complete source::Test_ identity, exactly equal to result.id>",
+  "source": {"file": "<id's source path>", "sha256": "<source_sha256>"},
+  "implementation": {"file": "<registered implementation>", "sha256": "<adapter_sha256>"},
+  "dependencies": ["<the registered {file, sha256} objects, in order>"],
+  "lifecycle": ["startup", "preparation", "source", "setup", "body",
+                "teardown", "cleanup", "finish"]
+}
+```
+
+The illustrative dependency string above denotes objects, not literal strings.
+All SHA-256 fields are lowercase 64-hex strings. Paths are repository-relative,
+nonempty and contain no empty, `.` or `..` segments, NULs or backslashes.
+Ingestion checks the actual source, implementation and dependency bytes, not
+agreement between two supplied hashes. Both independent observations must carry
+the complete `provenance`, including their own recorded `test_id`; each must
+exactly match `result.id` as well as its source path/hash. Relabeling a result to
+another function in the same file cannot reuse either run's observations, even
+if the result-level provenance is relabeled too. Provenance also identifies the
+registered orchestration/recording implementation used to obtain the independent
+reference and candidate runs. Discovery must still be complete/current and
+contain the exact parent and function. Duplicate result ids are rejected before
+any promotion.
+
+Each of `reference` and `candidate` is:
+
+```
+{
+  "status": "PASS",
+  "timeout": false,
+  "provenance": "<the provenance object above>",
+  "observation": {
+    "schema_version": 1,
+    "phases": ["startup", "preparation", "source", "setup", "body",
+               "teardown", "cleanup", "finish"],
+    "channels": {
+      "<each of the nine names>": {
+        "complete": true,
+        "records": [
+          {"phase": "startup", "<channel fields>": "..."},
+          "...one typed record for each phase, in that order..."
+        ]
+      }
+    }
+  }
+}
+```
+
+The example uses explanatory placeholders; producers must supply actual
+objects and values. Every channel must record all eight phases, including
+explicit empty event lists for phases with no events. `complete` is a recorder
+completion marker, not an equality claim. Missing phases, channels, fields,
+incomplete captures and malformed values fail closed. A recorder must observe
+absence, not default unsupported channels to empty. SetUp/TearDown absence is
+established by the sourced registry and still has phase records.
+
+Channel record fields (in addition to `phase`):
+
+| Name | Required raw payload |
+|---|---|
+| `assertions` | `errors`: strings of unresolved assertion errors attributed to this phase; `calls`: ordered `{name: nonempty string, arguments: JSON array, passed: boolean}` assertion calls. |
+| `exception_text` | `exceptions`: ordered `{text: string, handled: boolean}` caught/uncaught exception records. Empty success is `[]`, not an absent field. |
+| `error_stage` | `errors`: ordered `{stage: one of the eight phase names, text: string, handled: boolean}` errors assigned at their origin. |
+| `throwpoint_stack` | `exceptions`: ordered `{throwpoint: string, handled: boolean, frames: [...]}`; each frame has `kind: "script" or "function"`, `name`, `file` strings and positive integer `line`. Record the stack while active, not invented after unwinding. |
+| `messages` | `emitted`, `stdout`, `stderr`: exact strings; `history`: ordered strings. Include lifecycle output, not just body echo or the sample's `emitted_messages`. |
+| `editor_state` | `snapshot` with `cwd` string, `environment`, `options`, `registers`, `variables` JSON objects; `current: {buffer, window, tab}` positive ids; nonempty `buffers`, `windows`, `tabs` arrays described below. |
+| `filesystem` | `entries`: `{path, kind, mode}` inventory records, with lowercase `sha256` for `kind: "file"` and string `target` for `kind: "symlink"`; `"directory"` is also valid. `mode` is a nonnegative integer. `events`: ordered `{operation, path, success}` objects, operation one of `create`, `write`, `remove`, `rename`, `chmod`, `symlink`; rename additionally requires `destination`. Preserve operation details as extra JSON fields. |
+| `process_events` | `stdout`, `stderr` strings; `events`: ordered `{kind, identity: nonempty string, detail: JSON object}`, kind one of `spawn`, `exec`, `exit`, `wait`, `signal`, `timer_start`, `timer_stop`, `timer_fire`, `autocmd`. Include actual internal editor/timer events as well as process/descendant observations. |
+| `ui` | Positive `rows`, `columns`; zero-based `cursor: {row, column, visible: boolean}` within the grid; full rectangular `cells` array of rows of `{text: string, attributes: JSON object}`; ordered `events` JSON objects containing captured UI operations. An absent or empty grid is not a terminal observation. |
+
+Editor buffers have positive `id`, string `name`, ordered string `lines` and
+`options` object. Windows have positive `id`, `buffer`, `tab`, one-based
+`cursor.line`, zero-based `cursor.column` and `view` object. Tabs have positive
+`id` and a nonempty array of positive `windows` ids. Preserve options such as
+isident before source, after source and after body/finally, along with registers,
+environment and complete relevant editor state. A restored final snapshot does
+not excuse omitted intermediate effects: record action/event details in their
+phase in addition to boundary snapshots. Additional JSON fields in channel
+records are retained and compared too.
+
+JSON payloads permit finite numbers, strings, booleans, null, arrays and
+string-keyed objects, not Lua functions/opaque handles. Vim values whose types
+would otherwise be lost must use an explicit tagged JSON representation
+(for example `{type: "number", value: 1}` versus `{type: "bool", value: true}`).
+Workspace paths, editor handles and platform-local UI attribute ids require a
+reviewed stable representation in the registered recorder; retain their raw
+capture and mapping details in the records. There is no implicit trimming,
+sorting, timestamp removal, path substitution or UI normalization in the
+consumer. It compares the complete channel objects by structural equality,
+including record order, whitespace and extra captured fields.
+
+`compare.compare_whole(reference, candidate)` validates and recomputes all nine
+checks; `ledger.credit_whole(..., {hash = function(relative_path) ... end})`
+additionally requires current byte hashes and registered provenance. Progress
+exposes the recomputed result as each parent's `whole_comparison` and the
+ingestion disposition as `whole_result`. Reference failure/skip/malformed data
+is ORACLE_ERROR (timeout is ORACLE_TIMEOUT). Candidate timeout, unsupported and
+skip are TIMEOUT, UNSUPPORTED and BLOCKED; malformed candidate data is
+HARNESS_ERROR. Divergent valid channels are MISMATCH. A purported PASS with
+unresolved assertion errors, failed assertion calls or unhandled exceptions is
+not successful evidence even if both runs agree. Handled exceptions may be
+captured and compared, but do not exempt a non-PASS run. Rejected whole records
+are integrity problems for strict progress. This does not alter sample
+comparisons, discovery scopes, current flags or denominator accounting.
 
 ## Observables and freshness
 
@@ -122,8 +251,14 @@ particular denominator, while retaining it separately. It cannot be read as a
 global percentage of implemented functionality. Feature obligations in
 features.json are qualitative and are not arbitrarily weighted into a score.
 
-`tests/conformance.lua` guards false matches, expected exceptions, oracle/harness
-failures, stale results, partial coverage, missing observables, unknown adapters,
-skips and inflated full-test numerators. Future adapter work should extend these
-checks along with actual differential tests, including negative/stage-specific
-cases. Git history preserves progress snapshots and their evidence identity.
+`tests/conformance.lua` guards sample semantics and whole-consumer failures:
+forged verdicts/checks; every channel's divergence, absence, malformed envelope
+and payload; oracle/candidate failure, skip and timeout; stale implementation,
+source and dependency bytes; missing/mismatched test/source/lifecycle provenance;
+same-source function relabeling; partial/narrowed contracts and unknown/duplicate
+registrations.
+`tests/progress-integration.lua` rejects boolean-only/empty-channel/duplicate
+whole records through aggregation and restores optional full-test inputs along
+with other mutated reports. These are authored negative consumer tests, not
+execution producers, adapter registrations or compatibility evidence. Git
+history preserves progress snapshots and their evidence identity.

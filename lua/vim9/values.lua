@@ -138,24 +138,29 @@ function M.default(annotation)
   if annotation:match('^func') then return M.func({null=true}) end
   return M.int(0)
 end
-function M.binary(op,a,b)
+function M.binary(op,a,b,dialect)
+  local function comparison(result) return dialect=='legacy' and M.int(result and 1 or 0) or M.bool(result) end
   if op=='..' then return M.string(M.text(a)..M.text(b)) end
   local plain=op:gsub('[#?]$','')
   if plain=='is' or plain=='isnot' then
-    local same=(a.kind=='list' or a.kind=='dict' or a.kind=='func' or a.kind=='blob') and a==b or
-      (a.kind~='list' and a.kind~='dict' and a.kind~='func' and a.kind~='blob' and M.equal(a,b))
-    return M.bool(plain=='is' and same or plain=='isnot' and not same)
+    local same=false
+    if a.kind==b.kind then
+      if a.kind=='list' or a.kind=='dict' or a.kind=='func' or a.kind=='blob' then same=a==b
+      elseif a.kind=='string' and op:sub(-1)=='?' then same=vim.fn.tolower(a.data)==vim.fn.tolower(b.data)
+      else same=M.equal(a,b) end
+    end
+    return comparison(plain=='is' and same or plain=='isnot' and not same)
   end
   if plain=='==' or plain=='!=' then
     local equal
     if a.kind=='string' and b.kind=='string' and op:sub(-1)=='?' then equal=vim.fn.tolower(a.data)==vim.fn.tolower(b.data)
     else equal=M.equal(a,b) end
-    return M.bool(plain=='==' and equal or plain=='!=' and not equal)
+    return comparison(plain=='==' and equal or plain=='!=' and not equal)
   end
   if plain=='=~' or plain=='!~' then
     local pattern=M.text(b); if op:sub(-1)=='?' then pattern='\\c'..pattern else pattern='\\C'..pattern end
     local match=vim.fn.match(M.text(a),pattern)>=0
-    return M.bool(plain=='=~' and match or plain=='!~' and not match)
+    return comparison(plain=='=~' and match or plain=='!~' and not match)
   end
   if op=='+' and a.kind=='list' and b.kind=='list' then
     local xs={}; for _,x in ipairs(a.data) do xs[#xs+1]=x end; for _,x in ipairs(b.data) do xs[#xs+1]=x end
@@ -165,7 +170,7 @@ function M.binary(op,a,b)
     local x,y=a.data,b.data
     if a.kind=='float' or b.kind=='float' then x=tonumber(x);y=tonumber(y) end
     if a.kind~=b.kind and not ((a.kind=='number' or a.kind=='float') and (b.kind=='number' or b.kind=='float')) then E.raise('E1030','Invalid comparison') end
-    return M.bool(op=='<' and x<y or op=='>' and x>y or op=='<=' and x<=y or op=='>=' and x>=y)
+    return comparison(op=='<' and x<y or op=='>' and x>y or op=='<=' and x<=y or op=='>=' and x>=y)
   end
   M.num(a); M.num(b)
   local x,y=a.data,b.data

@@ -300,3 +300,31 @@ make[1]: Entering directory '/work'
 292/318 test_vim9_disassemble.vim: DISCOVERED (119)
 
 [Showing lines 1-300 of 495. Use :301 to continue]
+Post-assessment preservation verification
+Command: scripts/m0.lua m3 && make progress-check progress-integration && comparator-smoke.lua (same amd64 Docker/UTF-8 profile)
+Exit code: 0
+official-import-export: reference=PASS, emulator=PASS
+official-import-exists: reference=PASS, emulator=PASS
+official-noclear: reference=PASS, emulator=PASS
+cache-paths: reference=PASS, emulator=PASS
+private-and-readonly: reference=PASS, emulator=PASS
+lazy-autoload: reference=PASS, emulator=PASS
+source-reload: reference=PASS, emulator=PASS
+default-alias: reference=PASS, emulator=PASS
+duplicate-import: reference=PASS, emulator=PASS
+cycle: reference=PASS, emulator=PASS
+finish: reference=PASS, emulator=PASS
+function-import: reference=PASS, emulator=PASS
+function-source: reference=PASS, emulator=PASS
+function-relative-import: reference=PASS, emulator=PASS
+absolute-import: reference=PASS, emulator=PASS
+runtimepath-import: reference=PASS, emulator=PASS
+invalid-imports: reference=PASS, emulator=PASS
+reload-clears-import: reference=PASS, emulator=PASS
+.deps/nvim-linux-x86_64/bin/nvim --headless -u NONE -l scripts/progress.lua --strict
+{"denominator_debt_suites":29,"legacy_inputs":12,"reference":{"current":true,"passed":1532,"skipped":20,"unrun_suites":299},"equivalent_whole_tests":0,"profile_complete":false,"authored_sample_matches":28,"official_sample_matches":90,"modern_files":318,"unique_sample_matches":118,"sample_duplicates":2,"suite_statuses":{"BLOCKED":28,"NO_TESTS":1,"HELPER":4,"DISCOVERED":285},"test_statuses":{"BLOCKED":1,"NOT_RUN":7772,"PARTIAL":36},"evidence_statuses":{"MATCH":120},"confirmed_runtime_tests":7808,"full_test_lower_bound_percent":0,"legacy_equivalent":0,"note":"Lower bound over confirmed runtime tests only. It is not a global compatibility estimate. Sample matches, skips and unknowns earn no full-test credit.","sample_supported_parents":36,"unique_sample_evidence…
+.deps/nvim-linux-x86_64/bin/nvim --headless -u NONE -l tests/progress-integration.lua
+Strict progress rejects foreign/missing suite results, stale code, forged sample/whole comparisons, duplicate whole records and changed fixture content
+{"candidate_calls":[{"option_after":"@,48-57,_,192-255","observation":{"assertions":[],"throwpoint":"","emitted_messages":"","exception":""},"status":"PASS","return_value":0},{"option_after":"@,48-57,_,192-255","observation":{"assertions":[],"throwpoint":"","emitted_messages":"","exception":""},"status":"PASS","return_value":0},{"option_after":"@,48-57,_,192-255","observation":{"assertions":[],"throwpoint":"","emitted_messages":"","exception":""},"status":"PASS","return_value":0}],"option_mutations":[{"name":"isident","before":"@,48-57,_,192-255","after":"@,48-57,_,192-255,#"},{"name":"isident","before":"@,48-57,_,192-255,#","after":"@,48-57,_,192-255"},{"name":"isident","before":"@,48-57,_,192-255","after":"@,48-57,_,192-255,#"},{"name":"isident","before":"…
+
+[Some lines truncated to 768 chars]
