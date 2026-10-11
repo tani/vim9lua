@@ -52,6 +52,9 @@ if false && g:a == g:b.c
   failed = true
 endif
 assert_false(failed)
+
+# string interpolation with &&
+assert_equal('false', $"{1 && 0}")
 enddef
 defcompile
 call Func()

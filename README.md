@@ -1,6 +1,6 @@
 # vim9lua
 
-A Vim 9.0 compatibility emulator hosted by Neovim. The implementation is a plain
+A Vim 9 compatibility emulator hosted by Neovim. The implementation is a plain
 Lua AST interpreter: LPeg tokenization, a recursive-descent/Pratt parser,
 explicit Vim values, lexical environments and structured control flow.
 Type annotations and casts are retained in the AST and erased during execution.
@@ -60,12 +60,13 @@ Implemented and tested:
   cells, default arguments, variadic arguments, partials and argument-count checks.
 - `throw`, pattern catches, `finally`, nested exceptions, return and loop signals,
   plus `v:exception`, `v:throwpoint` and assertion state through `v:errors`.
-- A selected set of builtins for assertions, containers, functions and strings.
+- A selected set of builtins for assertions, containers, functions and strings,
+  including `items()` and `isinf()`. Prefix `++` / `--` statements are supported.
   `echo`, `echoerr`, `execute`, `unlet`, `call`, `eval` and `defcompile` syntax.
   `defcompile` is a no-op while static validation remains deferred.
 
-**Current validation: 64 official-derived cases pass differential testing,
-plus 10 authored semantic regression cases.** The number-literal smoke test
+**Current validation: 83 official-derived cases pass differential testing,
+plus 11 authored semantic regression cases.** The number-literal smoke test
 also passes in script and def contexts. These are selected cases, not whole-suite
 Vim conformance, and not a claim that all tests within their parent functions pass.
 One regression intentionally throws: passing means both implementations produce
@@ -123,7 +124,8 @@ used explicitly; Vim9 source is never delegated to Neovim's Vimscript evaluator.
 
 ## Pinned sources
 
-- Vim v9.0.0000: `eb49041875118be5fe60f07750c7c86cb26dccef`
+- Vim v9.2.1172 (latest published patch checked on 2026-10-11):
+  `b2b47bdf9401c865780dd4c47b1dbafb0463c75a`
 - vim9jit: `4fc236e753127081efad57cd5f91cf81c2bd3269`
 - Neovim v0.11.3; release archive SHA-256:
   `02b808a3ee8fc30161e07fe3c3edfb24b28bd0295323ac5dbdd8ec7012cac67d`
@@ -132,16 +134,24 @@ used explicitly; Vim9 source is never delegated to Neovim's Vimscript evaluator.
 The conformance runner rejects changed source revisions, upstream tracked edits,
 and host versions. The reference build is not hermetic.
 
-M0's unchanged official runner reported 1,099 attempted functions in nine Vim9
-suites: 1,075 passed, 24 skipped and zero failed **on reference Vim**. GUI and
-optional language/service features explain the skips. No whole-editor test suite
-or whole Vim9 suite has been run on the emulator.
+The latest unchanged official runner completed 14 Vim9 suites on reference
+Vim v9.2.1172: 1,552 attempted functions, 1,532 passed, 20 skipped and zero
+failed. The Python3 suite was skipped as a whole because this build has no
+Python3 support. Historical M0 results for v9.0.0000 remain in
+`reports/reference-v9.0.0000.json` (1,075 passed, 24 skipped). No whole-editor
+test suite or whole Vim9 suite has been run on the emulator.
+
+`bootstrap` upgrades an existing clean source checkout and uses a commit stamp
+to rebuild stale reference binaries. The latest tag is pinned for reproducible
+runs; future patches require an explicit pin/fixture update.
 
 ## Compatibility boundaries
 
 Static type checks, type-directed conversions, compile-time name resolution,
 exact diagnostic text/throwpoint stacks and validation timing remain deferred.
 The parser is eager, so parsing/unsupported diagnostics can precede execution.
+Classes, interfaces, enums, tuples, generic functions and type aliases introduced
+in later Vim 9 releases remain outside the implemented subset.
 General legacy Vimscript, heredoc execution, editor state/commands, options,
 mappings, autocmds, general host I/O, jobs and timers are not implemented.
 Module loading uses host file/path operations and `getcwd()`; these are the
@@ -166,13 +176,17 @@ full throwpoint-stack and error-stage equivalence are future work.
 ranges, original heredoc lines, dependencies, wrapper contexts and checksums.
 `<< trim` normalization is performed by reference Vim without executing the
 snippet. Setup adapts legacy global declarations to the selected context; snippet
-statements and direct test/helper definitions remain unchanged.
+statements and direct test/helper definitions remain unchanged. The selected
+`Test_for_loop` success prefix excludes its new underscore compiler-diagnostic
+tail: the standalone wrapper cannot reproduce its compilation context, and
+`assert_fails`/compiler validation remain deferred. The manifest explicitly
+records the excluded upstream line range and reason.
 
 `reports/m3.json`, `reports/m12.json`, `reports/regression.json`,
 `reports/differential.json` contain
-paired observations. `reports/reference.json` retains M0's full reference logs.
-`reports/inventory.json` and `reports/tests.tsv` contain 5,434 lexical declaration
-candidates across 265 test files, and 3,058 helper call sites. Those candidates
+paired observations. `reports/reference.json` retains the latest reference logs.
+`reports/inventory.json` and `reports/tests.tsv` contain 7,970 lexical declaration
+candidates across 318 test files, and 5,322 helper call sites. Those candidates
 include generated code declarations and are not an executed test denominator.
 
 Vim source references include `vim9expr.c`, `vim9cmds.c`, `vim9compile.c`,
@@ -182,8 +196,9 @@ vim9jit references include `crates/vim9-lexer`, `crates/vim9-parser/src/lib.rs`,
 examples to inspect, not the compatibility oracle.
 
 Differential testing confirmed several important rules: assignment evaluates the
-RHS before an indexed target, loop closures share the last iteration's binding,
-and cleanup runs on return/break/continue. A pinned v9.0.0000 regression also
+RHS before an indexed target, closures share the final loop-variable binding,
+while body-local declarations have a fresh cell for each iteration. Cleanup runs
+on return/break/continue. A regression verified on v9.2.1172 also
 retains a pending exception across finally-return and bypasses the script-level
 catch; this behavior is recorded in a dedicated expected-exception test.
 

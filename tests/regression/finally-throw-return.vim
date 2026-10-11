@@ -1,5 +1,5 @@
 vim9script
-# v9.0.0000 retains a pending exception across finally-return and bypasses
+# v9.2.1172 retains a pending exception across finally-return and bypasses
 # this script-level catch. The external harness must observe "old".
 def Pending(): string
   try

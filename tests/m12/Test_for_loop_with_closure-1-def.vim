@@ -1,8 +1,7 @@
 def Func()
 var flist: list<func>
 for i in range(5)
-  var inloop = i
-  flist[i] = () => inloop
+  flist[i] = () => i
 endfor
 for i in range(5)
   assert_equal(4, flist[i]())

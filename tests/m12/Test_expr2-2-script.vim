@@ -1,0 +1,36 @@
+vim9script
+def g:Record(val: any): any
+  g:vals->add(val)
+  return val
+enddef
+g:anint = 10
+g:thefour = 4
+g:blob_empty = 0z
+g:blob_one = 0z01
+g:blob_long = 0z0102.0304
+g:string_empty = ''
+g:string_short = 'x'
+g:string_long = 'abcdefghijklm'
+g:string_special = "ab\ncd\ref\ekk"
+assert_equal(true, true && true)
+assert_equal(false, true && !true)
+assert_equal(false, !true && true)
+assert_equal(false, !true && !true)
+
+assert_equal(true, true || true)
+assert_equal(true, true || !true)
+assert_equal(true, !true || true)
+assert_equal(false, !true || !true)
+
+assert_equal(false, false && false)
+assert_equal(false, false && !false)
+assert_equal(false, !false && false)
+assert_equal(true, !false && !false)
+
+assert_equal(false, false || false)
+assert_equal(true, false || !false)
+assert_equal(true, !false || false)
+assert_equal(true, !false || !false)
+
+assert_equal(false, !true && !true && !true)
+assert_equal(true, !false || !false || !false)

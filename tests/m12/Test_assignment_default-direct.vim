@@ -6,10 +6,8 @@ def Test_assignment_default()
   var thenumber: number
   assert_equal(0, thenumber)
 
-  if has('float')
-    var thefloat: float
-    assert_equal(0.0, thefloat)
-  endif
+  var thefloat: float
+  assert_equal(0.0, thefloat)
 
   var thestring: string
   assert_equal('', thestring)

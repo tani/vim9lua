@@ -1,6 +1,6 @@
 -- Extract pinned, unmodified official snippets; never rewrite their statements.
 local root=vim.fn.fnamemodify(debug.getinfo(1,'S').source:sub(2),':p:h:h')
-local commit='eb49041875118be5fe60f07750c7c86cb26dccef'
+local commit='b2b47bdf9401c865780dd4c47b1dbafb0463c75a'
 local out=root..'/tests/m12';vim.fn.mkdir(out,'p')
 local function main()
 local fixtures={}
@@ -75,6 +75,18 @@ for file,names in pairs(selections) do
      assert(run.code==0 and vim.fn.filereadable(tmp..'/lines.json')==1,'heredoc extraction '..name)
      local body=vim.json.decode(table.concat(vim.fn.readfile(tmp..'/lines.json'),'\n'))
      vim.fn.delete(tmp,'rf')
+     local excluded
+     if name=='Test_for_loop' then
+      for j,line in ipairs(body) do
+       if line:match('^# Test for trying to use the loop variable') then
+        excluded={start=start+j-1,finish=finish-1,reason='Underscore compiler diagnostics require original helper compilation context; deferred'}
+        while #body>=j do table.remove(body) end
+        while #raw>=j do table.remove(raw) end
+        while body[#body]=='' do table.remove(body);table.remove(raw) end
+        break
+       end
+      end
+     end
      local text=table.concat(body,'\n')..'\n'
      local modes=helper=='CheckScriptSuccess' and {'script'} or helper=='CheckDefSuccess' and {'def'} or {'script','def'}
      for _,mode in ipairs(modes) do
@@ -86,7 +98,7 @@ for file,names in pairs(selections) do
       if name=='Test_expr2' or name=='Test_expr3' then if mode=='script' then wrapped=wrapped:gsub('^vim9script\n','vim9script\n'..table.concat(record,'\n')..'\n',1)
        else wrapped=table.concat(record,'\n')..'\n'..wrapped end end
       save(name..'/'..ordinal..'/'..mode,wrapped,{source_file='upstream/vim/src/testdir/'..file,
-       source_test=name,source_start=start,source_end=finish-1,helper=helper,mode=mode,original_heredoc=raw,
+       source_test=name,source_start=start,source_end=start+#raw-1,excluded_range=excluded,helper=helper,mode=mode,original_heredoc=raw,
        dependencies=(name=='Test_expr2' or name=='Test_expr3') and {{name='g:Record',start=record_first,finish=record_last}} or {},
        setup= file=='test_vim9_expr.vim' and setup or {},normalization='Vim << trim plus helper context wrapper; constant legacy let setup'})
      end

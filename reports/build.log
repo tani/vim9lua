@@ -3,277 +3,161 @@ If there are problems, cd to the src directory and run make there
 cd src && make first
 make[1]: Entering directory '/workspace/scratch/319ec9cb93e8/vim9-lua/upstream/vim/src'
 /bin/sh install-sh -c -d objects
-CC="gcc -Iproto -DHAVE_CONFIG_H       " srcdir=. sh ./osdef.sh
+CC="gcc -Iproto -DHAVE_CONFIG_H         " srcdir=. sh ./osdef.sh
 creating auto/pathdef.c
-cd xxd; CC="gcc" CFLAGS=" -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1" LDFLAGS="-L/workspace/scratch/319ec9cb93e8/vim9-lua/upstream/vim/.deps/lib -L/usr/local/lib -Wl,--as-needed" \
+cd xxd; CC="gcc" CFLAGS=" -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1" LDFLAGS="-L/workspace/scratch/319ec9cb93e8/vim9-lua/.deps/lib -L/usr/local/lib -Wl,--as-needed" \
 	make -f Makefile
 make[2]: Entering directory '/workspace/scratch/319ec9cb93e8/vim9-lua/upstream/vim/src/xxd'
-gcc  -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1 -L/workspace/scratch/319ec9cb93e8/vim9-lua/upstream/vim/.deps/lib -L/usr/local/lib -Wl,--as-needed -DUNIX -o xxd xxd.c
+gcc   -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1  -L/workspace/scratch/319ec9cb93e8/vim9-lua/.deps/lib -L/usr/local/lib -Wl,--as-needed -DUNIX -o xxd xxd.c
 touch objects/.dirstamp
-gcc -c -I. -Ilibvterm/include -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -DINLINE="" -DVSNPRINTF=vim_vsnprintf -DSNPRINTF=vim_snprintf -DIS_COMBINING_FUNCTION=utf_iscomposing_uint -DWCWIDTH_FUNCTION=utf_uint2cells -o objects/vterm_encoding.o libvterm/src/encoding.c
-gcc -c -I. -Ilibvterm/include -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -DINLINE="" -DVSNPRINTF=vim_vsnprintf -DSNPRINTF=vim_snprintf -DIS_COMBINING_FUNCTION=utf_iscomposing_uint -DWCWIDTH_FUNCTION=utf_uint2cells -o objects/vterm_keyboard.o libvterm/src/keyboard.c
-gcc -c -I. -Ilibvterm/include -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -DINLINE="" -DVSNPRINTF=vim_vsnprintf -DSNPRINTF=vim_snprintf -DIS_COMBINING_FUNCTION=utf_iscomposing_uint -DWCWIDTH_FUNCTION=utf_uint2cells -o objects/vterm_mouse.o libvterm/src/mouse.c
-gcc -c -I. -Ilibvterm/include -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -DINLINE="" -DVSNPRINTF=vim_vsnprintf -DSNPRINTF=vim_snprintf -DIS_COMBINING_FUNCTION=utf_iscomposing_uint -DWCWIDTH_FUNCTION=utf_uint2cells -o objects/vterm_parser.o libvterm/src/parser.c
-gcc -c -I. -Ilibvterm/include -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -DINLINE="" -DVSNPRINTF=vim_vsnprintf -DSNPRINTF=vim_snprintf -DIS_COMBINING_FUNCTION=utf_iscomposing_uint -DWCWIDTH_FUNCTION=utf_uint2cells -o objects/vterm_pen.o libvterm/src/pen.c
-gcc -c -I. -Ilibvterm/include -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -DINLINE="" -DVSNPRINTF=vim_vsnprintf -DSNPRINTF=vim_snprintf -DIS_COMBINING_FUNCTION=utf_iscomposing_uint -DWCWIDTH_FUNCTION=utf_uint2cells -o objects/vterm_screen.o libvterm/src/screen.c
-gcc -c -I. -Ilibvterm/include -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -DINLINE="" -DVSNPRINTF=vim_vsnprintf -DSNPRINTF=vim_snprintf -DIS_COMBINING_FUNCTION=utf_iscomposing_uint -DWCWIDTH_FUNCTION=utf_uint2cells -o objects/vterm_state.o libvterm/src/state.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/alloc.o alloc.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/arabic.o arabic.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/arglist.o arglist.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/autocmd.o autocmd.c
 make[2]: Leaving directory '/workspace/scratch/319ec9cb93e8/vim9-lua/upstream/vim/src/xxd'
-gcc -c -I. -Ilibvterm/include -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -DINLINE="" -DVSNPRINTF=vim_vsnprintf -DSNPRINTF=vim_snprintf -DIS_COMBINING_FUNCTION=utf_iscomposing_uint -DWCWIDTH_FUNCTION=utf_uint2cells -o objects/vterm_unicode.o libvterm/src/unicode.c
-gcc -c -I. -Ilibvterm/include -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -DINLINE="" -DVSNPRINTF=vim_vsnprintf -DSNPRINTF=vim_snprintf -DIS_COMBINING_FUNCTION=utf_iscomposing_uint -DWCWIDTH_FUNCTION=utf_uint2cells -o objects/vterm_vterm.o libvterm/src/vterm.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/netbeans.o netbeans.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/job.o job.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/channel.o channel.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/xdiffi.o xdiff/xdiffi.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/xemit.o xdiff/xemit.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/xprepare.o xdiff/xprepare.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/xutils.o xdiff/xutils.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/xhistogram.o xdiff/xhistogram.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/xpatience.o xdiff/xpatience.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/charset.o charset.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/json.o json.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/main.o main.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/memfile.o memfile.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/message.o message.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/alloc.o alloc.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/arabic.o arabic.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/arglist.o arglist.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/autocmd.o autocmd.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/beval.o beval.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/buffer.o buffer.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/change.o change.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/blob.o blob.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/blowfish.o blowfish.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/cindent.o cindent.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/clientserver.o clientserver.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/clipboard.o clipboard.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/cmdexpand.o cmdexpand.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/cmdhist.o cmdhist.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/crypt.o crypt.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/crypt_zip.o crypt_zip.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/debugger.o debugger.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/dict.o dict.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/diff.o diff.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/digraph.o digraph.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/drawline.o drawline.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/drawscreen.o drawscreen.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/edit.o edit.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/eval.o eval.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/evalbuffer.o evalbuffer.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/evalfunc.o evalfunc.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/evalvars.o evalvars.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/evalwindow.o evalwindow.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/ex_cmds.o ex_cmds.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/ex_cmds2.o ex_cmds2.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/ex_docmd.o ex_docmd.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/ex_eval.o ex_eval.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/ex_getln.o ex_getln.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/fileio.o fileio.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/filepath.o filepath.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/findfile.o findfile.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/float.o float.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/fold.o fold.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/getchar.o getchar.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/gui_xim.o gui_xim.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/hardcopy.o hardcopy.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/hashtab.o hashtab.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/help.o help.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/highlight.o highlight.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/if_cscope.o if_cscope.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/if_xcmdsrv.o if_xcmdsrv.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/indent.o indent.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/insexpand.o insexpand.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/list.o list.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/locale.o locale.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/map.o map.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/mark.o mark.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/match.o match.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/mbyte.o mbyte.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/memline.o memline.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/menu.o menu.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/misc1.o misc1.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/misc2.o misc2.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/mouse.o mouse.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/move.o move.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/normal.o normal.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/ops.o ops.c
-gcc -c -I.       -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1              -o objects/option.o option.c
-gcc -c -I.       -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1              -o objects/optionstr.o optionstr.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/os_unix.o os_unix.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/pathdef.o auto/pathdef.c
-os_unix.c: In function ‘sig_winch’:
-os_unix.c:872:5: warning: ‘sigset’ is deprecated: Use the signal and sigprocmask functions instead [-Wdeprecated-declarations]
-  872 |     signal(SIGWINCH, (void (*)())sig_winch);
-      |     ^~~~~~
-In file included from /usr/include/x86_64-linux-gnu/sys/param.h:28,
-                 from os_unix.h:60,
-                 from vim.h:238,
-                 from os_unix.c:21:
-/usr/include/signal.h:367:23: note: declared here
-  367 | extern __sighandler_t sigset (int __sig, __sighandler_t __disp) __THROW
-      |                       ^~~~~~
-os_unix.c: In function ‘sig_tstp’:
-os_unix.c:884:9: warning: ‘sigset’ is deprecated: Use the signal and sigprocmask functions instead [-Wdeprecated-declarations]
-  884 |         signal(SIGTSTP, ignore_sigtstp ? SIG_IGN : SIG_DFL);
-      |         ^~~~~~
-/usr/include/signal.h:367:23: note: declared here
-  367 | extern __sighandler_t sigset (int __sig, __sighandler_t __disp) __THROW
-      |                       ^~~~~~
-os_unix.c:893:5: warning: ‘sigset’ is deprecated: Use the signal and sigprocmask functions instead [-Wdeprecated-declarations]
-  893 |     signal(SIGTSTP, (void (*)())sig_tstp);
-      |     ^~~~~~
-/usr/include/signal.h:367:23: note: declared here
-  367 | extern __sighandler_t sigset (int __sig, __sighandler_t __disp) __THROW
-      |                       ^~~~~~
-os_unix.c: In function ‘catch_sigint’:
-os_unix.c:903:5: warning: ‘sigset’ is deprecated: Use the signal and sigprocmask functions instead [-Wdeprecated-declarations]
-  903 |     signal(SIGINT, (void (*)())catch_sigint);
-      |     ^~~~~~
-/usr/include/signal.h:367:23: note: declared here
-  367 | extern __sighandler_t sigset (int __sig, __sighandler_t __disp) __THROW
-      |                       ^~~~~~
-os_unix.c: In function ‘catch_sigusr1’:
-os_unix.c:913:5: warning: ‘sigset’ is deprecated: Use the signal and sigprocmask functions instead [-Wdeprecated-declarations]
-  913 |     signal(SIGUSR1, (void (*)())catch_sigusr1);
-      |     ^~~~~~
-/usr/include/signal.h:367:23: note: declared here
-  367 | extern __sighandler_t sigset (int __sig, __sighandler_t __disp) __THROW
-      |                       ^~~~~~
-os_unix.c: In function ‘catch_sigpwr’:
-os_unix.c:923:5: warning: ‘sigset’ is deprecated: Use the signal and sigprocmask functions instead [-Wdeprecated-declarations]
-  923 |     signal(SIGPWR, (void (*)())catch_sigpwr);
-      |     ^~~~~~
-/usr/include/signal.h:367:23: note: declared here
-  367 | extern __sighandler_t sigset (int __sig, __sighandler_t __disp) __THROW
-      |                       ^~~~~~
-os_unix.c: In function ‘mch_init’:
-os_unix.c:1367:5: warning: ‘sigset’ is deprecated: Use the signal and sigprocmask functions instead [-Wdeprecated-declarations]
- 1367 |     ignore_sigtstp = restricted || SIG_IGN == signal(SIGTSTP, SIG_ERR);
-      |     ^~~~~~~~~~~~~~
-/usr/include/signal.h:367:23: note: declared here
-  367 | extern __sighandler_t sigset (int __sig, __sighandler_t __disp) __THROW
-      |                       ^~~~~~
-os_unix.c: In function ‘set_signals’:
-os_unix.c:1386:5: warning: ‘sigset’ is deprecated: Use the signal and sigprocmask functions instead [-Wdeprecated-declarations]
- 1386 |     signal(SIGWINCH, (void (*)())sig_winch);
-      |     ^~~~~~
-/usr/include/signal.h:367:23: note: declared here
-  367 | extern __sighandler_t sigset (int __sig, __sighandler_t __disp) __THROW
-      |                       ^~~~~~
-os_unix.c:1394:5: warning: ‘sigset’ is deprecated: Use the signal and sigprocmask functions instead [-Wdeprecated-declarations]
- 1394 |     signal(SIGTSTP, ignore_sigtstp ? SIG_IGN
-      |     ^~~~~~
-/usr/include/signal.h:367:23: note: declared here
-  367 | extern __sighandler_t sigset (int __sig, __sighandler_t __disp) __THROW
-      |                       ^~~~~~
-os_unix.c:1401:5: warning: ‘sigset’ is deprecated: Use the signal and sigprocmask functions instead [-Wdeprecated-declarations]
- 1401 |     signal(SIGCONT, sigcont_handler);
-      |     ^~~~~~
-/usr/include/signal.h:367:23: note: declared here
-  367 | extern __sighandler_t sigset (int __sig, __sighandler_t __disp) __THROW
-      |                       ^~~~~~
-os_unix.c:1407:5: warning: ‘sigset’ is deprecated: Use the signal and sigprocmask functions instead [-Wdeprecated-declarations]
- 1407 |     signal(SIGPIPE, SIG_IGN);
-      |     ^~~~~~
-/usr/include/signal.h:367:23: note: declared here
-  367 | extern __sighandler_t sigset (int __sig, __sighandler_t __disp) __THROW
-      |                       ^~~~~~
-os_unix.c:1418:5: warning: ‘sigset’ is deprecated: Use the signal and sigprocmask functions instead [-Wdeprecated-declarations]
- 1418 |     signal(SIGUSR1, (void (*)())catch_sigusr1);
-      |     ^~~~~~
-/usr/include/signal.h:367:23: note: declared here
-  367 | extern __sighandler_t sigset (int __sig, __sighandler_t __disp) __THROW
-      |                       ^~~~~~
-os_unix.c:1425:5: warning: ‘sigset’ is deprecated: Use the signal and sigprocmask functions instead [-Wdeprecated-declarations]
- 1425 |     signal(SIGALRM, SIG_IGN);
-      |     ^~~~~~
-/usr/include/signal.h:367:23: note: declared here
-  367 | extern __sighandler_t sigset (int __sig, __sighandler_t __disp) __THROW
-      |                       ^~~~~~
-os_unix.c:1433:5: warning: ‘sigset’ is deprecated: Use the signal and sigprocmask functions instead [-Wdeprecated-declarations]
- 1433 |     signal(SIGPWR, (void (*)())catch_sigpwr);
-      |     ^~~~~~
-/usr/include/signal.h:367:23: note: declared here
-  367 | extern __sighandler_t sigset (int __sig, __sighandler_t __disp) __THROW
-      |                       ^~~~~~
-os_unix.c: In function ‘catch_int_signal’:
-os_unix.c:1457:5: warning: ‘sigset’ is deprecated: Use the signal and sigprocmask functions instead [-Wdeprecated-declarations]
- 1457 |     signal(SIGINT, (void (*)())catch_sigint);
-      |     ^~~~~~
-/usr/include/signal.h:367:23: note: declared here
-  367 | extern __sighandler_t sigset (int __sig, __sighandler_t __disp) __THROW
-      |                       ^~~~~~
-os_unix.c: In function ‘reset_signals’:
-os_unix.c:1467:5: warning: ‘sigset’ is deprecated: Use the signal and sigprocmask functions instead [-Wdeprecated-declarations]
- 1467 |     signal(SIGCONT, SIG_DFL);
-      |     ^~~~~~
-/usr/include/signal.h:367:23: note: declared here
-  367 | extern __sighandler_t sigset (int __sig, __sighandler_t __disp) __THROW
-      |                       ^~~~~~
-os_unix.c: In function ‘catch_signals’:
-os_unix.c:1517:13: warning: ‘sigset’ is deprecated: Use the signal and sigprocmask functions instead [-Wdeprecated-declarations]
- 1517 |             signal(signal_info[i].sig,
-      |             ^~~~~~
-/usr/include/signal.h:367:23: note: declared here
-  367 | extern __sighandler_t sigset (int __sig, __sighandler_t __disp) __THROW
-      |                       ^~~~~~
-os_unix.c: In function ‘may_core_dump’:
-os_unix.c:3518:9: warning: ‘sigset’ is deprecated: Use the signal and sigprocmask functions instead [-Wdeprecated-declarations]
- 3518 |         signal(deadly_signal, SIG_DFL);
-      |         ^~~~~~
-/usr/include/signal.h:367:23: note: declared here
-  367 | extern __sighandler_t sigset (int __sig, __sighandler_t __disp) __THROW
-      |                       ^~~~~~
-os_unix.c: In function ‘mch_call_shell_fork’:
-os_unix.c:4817:21: warning: ‘sigset’ is deprecated: Use the signal and sigprocmask functions instead [-Wdeprecated-declarations]
- 4817 |                     signal(SIGHUP, SIG_IGN);
-      |                     ^~~~~~
-/usr/include/signal.h:367:23: note: declared here
-  367 | extern __sighandler_t sigset (int __sig, __sighandler_t __disp) __THROW
-      |                       ^~~~~~
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/popupmenu.o popupmenu.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/popupwin.o popupwin.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/profiler.o profiler.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/pty.o pty.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/quickfix.o quickfix.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/regexp.o regexp.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/register.o register.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/screen.o screen.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/scriptfile.o scriptfile.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/search.o search.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/session.o session.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/sha256.o sha256.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/sign.o sign.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/sound.o sound.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/spell.o spell.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/spellfile.o spellfile.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/spellsuggest.o spellsuggest.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/strings.o strings.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/syntax.o syntax.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/tag.o tag.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/term.o term.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/terminal.o terminal.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/testing.o testing.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/textformat.o textformat.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/textobject.o textobject.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/textprop.o textprop.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/time.o time.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/typval.o typval.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/ui.o ui.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/undo.o undo.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/usercmd.o usercmd.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/userfunc.o userfunc.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/vim9cmds.o vim9cmds.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/vim9compile.o vim9compile.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/vim9execute.o vim9execute.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/vim9expr.o vim9expr.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/vim9instr.o vim9instr.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/vim9script.o vim9script.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/vim9type.o vim9type.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/viminfo.o viminfo.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/window.o window.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        -o objects/bufwrite.o bufwrite.c
-gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1        version.c -o objects/version.o
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/beval.o beval.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/buffer.o buffer.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/change.o change.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/blob.o blob.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/blowfish.o blowfish.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/cindent.o cindent.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/clientserver.o clientserver.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1            -o objects/clipboard.o clipboard.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/cmdexpand.o cmdexpand.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/cmdhist.o cmdhist.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/crypt.o crypt.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/crypt_zip.o crypt_zip.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/debugger.o debugger.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/dict.o dict.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/diff.o diff.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/digraph.o digraph.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/drawline.o drawline.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/drawscreen.o drawscreen.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/edit.o edit.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/eval.o eval.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/evalbuffer.o evalbuffer.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/evalfunc.o evalfunc.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/evalvars.o evalvars.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/evalwindow.o evalwindow.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/ex_cmds.o ex_cmds.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/ex_cmds2.o ex_cmds2.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/ex_docmd.o ex_docmd.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/ex_eval.o ex_eval.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/ex_getln.o ex_getln.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/fileio.o fileio.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/filepath.o filepath.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/findfile.o findfile.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/float.o float.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/fold.o fold.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/fuzzy.o fuzzy.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/getchar.o getchar.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/gc.o gc.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/gui_xim.o gui_xim.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/hardcopy.o hardcopy.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1              -o objects/hardcopy_pango.o hardcopy_pango.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/hardcopy_postscript.o hardcopy_postscript.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/hashtab.o hashtab.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/help.o help.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/highlight.o highlight.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/if_cscope.o if_cscope.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/if_xcmdsrv.o if_xcmdsrv.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/image.o image.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/image_kitty.o image_kitty.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/image_sixel.o image_sixel.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/indent.o indent.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/insexpand.o insexpand.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/linematch.o linematch.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/list.o list.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/locale.o locale.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/logfile.o logfile.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/map.o map.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/mark.o mark.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/match.o match.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/mbyte.o mbyte.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/memline.o memline.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/menu.o menu.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/misc1.o misc1.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/misc2.o misc2.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/mouse.o mouse.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/move.o move.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/normal.o normal.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/ops.o ops.c
+gcc -c -I.       -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1                -o objects/option.o option.c
+gcc -c -I.       -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1                -o objects/optionstr.o optionstr.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/os_unix.o os_unix.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/pathdef.o auto/pathdef.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/popupmenu.o popupmenu.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/popupwin.o popupwin.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/profiler.o profiler.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/pty.o pty.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/quickfix.o quickfix.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/regexp.o regexp.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/register.o register.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/screen.o screen.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/scriptfile.o scriptfile.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/search.o search.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/session.o session.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/sha256.o sha256.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/sign.o sign.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/socketserver.o socketserver.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/sound.o sound.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/spell.o spell.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/spellfile.o spellfile.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/spellsuggest.o spellsuggest.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/strings.o strings.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/syntax.o syntax.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/tabpanel.o tabpanel.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/tag.o tag.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/term.o term.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/terminal.o terminal.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/testing.o testing.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/textformat.o textformat.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/textobject.o textobject.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/textprop.o textprop.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/time.o time.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/tuple.o tuple.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/typval.o typval.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/ui.o ui.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/undo.o undo.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/usercmd.o usercmd.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/userfunc.o userfunc.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/version.o version.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/vim9class.o vim9class.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/vim9cmds.o vim9cmds.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/vim9compile.o vim9compile.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/vim9execute.o vim9execute.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/vim9expr.o vim9expr.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/vim9generics.o vim9generics.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/vim9instr.o vim9instr.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/vim9script.o vim9script.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/vim9type.o vim9type.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/viminfo.o viminfo.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/window.o window.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/bufwrite.o bufwrite.c
+gcc -c -I. -Ilibvterm/include -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -DINLINE="" -DVSNPRINTF=vim_vsnprintf -DSNPRINTF=vim_snprintf -DIS_COMBINING_FUNCTION=utf_iscomposing_uint -DWCWIDTH_FUNCTION=utf_uint2cells -o objects/vterm_encoding.o libvterm/src/encoding.c
+gcc -c -I. -Ilibvterm/include -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -DINLINE="" -DVSNPRINTF=vim_vsnprintf -DSNPRINTF=vim_snprintf -DIS_COMBINING_FUNCTION=utf_iscomposing_uint -DWCWIDTH_FUNCTION=utf_uint2cells -o objects/vterm_keyboard.o libvterm/src/keyboard.c
+gcc -c -I. -Ilibvterm/include -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -DINLINE="" -DVSNPRINTF=vim_vsnprintf -DSNPRINTF=vim_snprintf -DIS_COMBINING_FUNCTION=utf_iscomposing_uint -DWCWIDTH_FUNCTION=utf_uint2cells -o objects/vterm_mouse.o libvterm/src/mouse.c
+gcc -c -I. -Ilibvterm/include -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -DINLINE="" -DVSNPRINTF=vim_vsnprintf -DSNPRINTF=vim_snprintf -DIS_COMBINING_FUNCTION=utf_iscomposing_uint -DWCWIDTH_FUNCTION=utf_uint2cells -o objects/vterm_parser.o libvterm/src/parser.c
+gcc -c -I. -Ilibvterm/include -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -DINLINE="" -DVSNPRINTF=vim_vsnprintf -DSNPRINTF=vim_snprintf -DIS_COMBINING_FUNCTION=utf_iscomposing_uint -DWCWIDTH_FUNCTION=utf_uint2cells -o objects/vterm_pen.o libvterm/src/pen.c
+gcc -c -I. -Ilibvterm/include -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -DINLINE="" -DVSNPRINTF=vim_vsnprintf -DSNPRINTF=vim_snprintf -DIS_COMBINING_FUNCTION=utf_iscomposing_uint -DWCWIDTH_FUNCTION=utf_uint2cells -o objects/vterm_screen.o libvterm/src/screen.c
+gcc -c -I. -Ilibvterm/include -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -DINLINE="" -DVSNPRINTF=vim_vsnprintf -DSNPRINTF=vim_snprintf -DIS_COMBINING_FUNCTION=utf_iscomposing_uint -DWCWIDTH_FUNCTION=utf_uint2cells -o objects/vterm_state.o libvterm/src/state.c
+gcc -c -I. -Ilibvterm/include -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -DINLINE="" -DVSNPRINTF=vim_vsnprintf -DSNPRINTF=vim_snprintf -DIS_COMBINING_FUNCTION=utf_iscomposing_uint -DWCWIDTH_FUNCTION=utf_uint2cells -o objects/vterm_unicode.o libvterm/src/unicode.c
+gcc -c -I. -Ilibvterm/include -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -DINLINE="" -DVSNPRINTF=vim_vsnprintf -DSNPRINTF=vim_snprintf -DIS_COMBINING_FUNCTION=utf_iscomposing_uint -DWCWIDTH_FUNCTION=utf_uint2cells -o objects/vterm_vterm.o libvterm/src/vterm.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/netbeans.o netbeans.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/job.o job.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/channel.o channel.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/xdiffi.o xdiff/xdiffi.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/xemit.o xdiff/xemit.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/xprepare.o xdiff/xprepare.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/xutils.o xdiff/xutils.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/xhistogram.o xdiff/xhistogram.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/xpatience.o xdiff/xpatience.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/charset.o charset.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/json.o json.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/main.o main.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/memfile.o memfile.c
+gcc -c -I. -Iproto -DHAVE_CONFIG_H     -g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1          -o objects/message.o message.c
 link.sh: $LINK_AS_NEEDED set to 'yes': invoking linker directly.
-  gcc   -L/workspace/scratch/319ec9cb93e8/vim9-lua/upstream/vim/.deps/lib -L/usr/local/lib -Wl,--as-needed 	-o vim objects/alloc.o objects/arabic.o objects/arglist.o objects/autocmd.o objects/beval.o objects/buffer.o objects/change.o objects/blob.o objects/blowfish.o objects/cindent.o objects/clientserver.o objects/clipboard.o objects/cmdexpand.o objects/cmdhist.o objects/crypt.o objects/crypt_zip.o objects/debugger.o objects/dict.o objects/diff.o objects/digraph.o objects/drawline.o objects/drawscreen.o objects/edit.o objects/eval.o objects/evalbuffer.o objects/evalfunc.o objects/evalvars.o objects/evalwindow.o objects/ex_cmds.o objects/ex_cmds2.o objects/ex_docmd.o objects/ex_eval.o objects/ex_getln.o objects/fileio.o objects/filepath.o objects/findfile.o objects/float.o objects/fold.o objects/getchar.o objects/gui_xim.o objects/hardcopy.o objects/hashtab.o objects/help.o objects/highlight.o objects/if_cscope.o objects/if_xcmdsrv.o objects/indent.o objects/insexpand.o objects/list.o objects/locale.o objects/map.o objects/mark.o objects/match.o objects/mbyte.o objects/memline.o objects/menu.o objects/misc1.o objects/misc2.o objects/mouse.o objects/move.o objects/normal.o objects/ops.o objects/option.o objects/optionstr.o objects/os_unix.o objects/pathdef.o objects/popupmenu.o objects/popupwin.o objects/profiler.o objects/pty.o objects/quickfix.o objects/regexp.o objects/register.o objects/screen.o objects/scriptfile.o objects/search.o objects/session.o objects/sha256.o objects/sign.o objects/sound.o objects/spell.o objects/spellfile.o objects/spellsuggest.o objects/strings.o objects/syntax.o objects/tag.o objects/term.o objects/terminal.o objects/testing.o objects/textformat.o objects/textobject.o objects/textprop.o objects/time.o objects/typval.o objects/ui.o objects/undo.o objects/usercmd.o objects/userfunc.o objects/version.o objects/vim9cmds.o objects/vim9compile.o objects/vim9execute.o objects/vim9expr.o objects/vim9instr.o objects/vim9script.o objects/vim9type.o objects/viminfo.o objects/window.o objects/bufwrite.o  objects/vterm_encoding.o objects/vterm_keyboard.o objects/vterm_mouse.o objects/vterm_parser.o objects/vterm_pen.o objects/vterm_screen.o objects/vterm_state.o objects/vterm_unicode.o objects/vterm_vterm.o         objects/netbeans.o objects/job.o objects/channel.o objects/xdiffi.o objects/xemit.o objects/xprepare.o objects/xutils.o objects/xhistogram.o objects/xpatience.o  objects/charset.o objects/json.o objects/main.o objects/memfile.o objects/message.o        -lm  -ltinfo -lrt           
+  gcc   -L/workspace/scratch/319ec9cb93e8/vim9-lua/.deps/lib -L/usr/local/lib -Wl,--as-needed 	-o vim objects/alloc.o objects/arabic.o objects/arglist.o objects/autocmd.o objects/beval.o objects/buffer.o objects/change.o objects/blob.o objects/blowfish.o objects/cindent.o objects/clientserver.o objects/clipboard.o objects/cmdexpand.o objects/cmdhist.o objects/crypt.o objects/crypt_zip.o objects/debugger.o objects/dict.o objects/diff.o objects/digraph.o objects/drawline.o objects/drawscreen.o objects/edit.o objects/eval.o objects/evalbuffer.o objects/evalfunc.o objects/evalvars.o objects/evalwindow.o objects/ex_cmds.o objects/ex_cmds2.o objects/ex_docmd.o objects/ex_eval.o objects/ex_getln.o objects/fileio.o objects/filepath.o objects/findfile.o objects/float.o objects/fold.o objects/fuzzy.o objects/getchar.o objects/gc.o objects/gui_xim.o objects/hardcopy.o objects/hardcopy_pango.o objects/hardcopy_postscript.o objects/hashtab.o objects/help.o objects/highlight.o objects/if_cscope.o objects/if_xcmdsrv.o objects/image.o objects/image_kitty.o objects/image_sixel.o objects/indent.o objects/insexpand.o objects/linematch.o objects/list.o objects/locale.o objects/logfile.o objects/map.o objects/mark.o objects/match.o objects/mbyte.o objects/memline.o objects/menu.o objects/misc1.o objects/misc2.o objects/mouse.o objects/move.o objects/normal.o objects/ops.o objects/option.o objects/optionstr.o objects/os_unix.o objects/pathdef.o objects/popupmenu.o objects/popupwin.o objects/profiler.o objects/pty.o objects/quickfix.o objects/regexp.o objects/register.o objects/screen.o objects/scriptfile.o objects/search.o objects/session.o objects/sha256.o objects/sign.o objects/socketserver.o objects/sound.o objects/spell.o objects/spellfile.o objects/spellsuggest.o objects/strings.o objects/syntax.o objects/tabpanel.o objects/tag.o objects/term.o objects/terminal.o objects/testing.o objects/textformat.o objects/textobject.o objects/textprop.o objects/time.o objects/tuple.o objects/typval.o objects/ui.o objects/undo.o objects/usercmd.o objects/userfunc.o objects/version.o objects/vim9class.o objects/vim9cmds.o objects/vim9compile.o objects/vim9execute.o objects/vim9expr.o objects/vim9generics.o objects/vim9instr.o objects/vim9script.o objects/vim9type.o objects/viminfo.o objects/window.o objects/bufwrite.o  objects/vterm_encoding.o objects/vterm_keyboard.o objects/vterm_mouse.o objects/vterm_parser.o objects/vterm_pen.o objects/vterm_screen.o objects/vterm_state.o objects/vterm_unicode.o objects/vterm_vterm.o         objects/netbeans.o objects/job.o objects/channel.o objects/xdiffi.o objects/xemit.o objects/xprepare.o objects/xutils.o objects/xhistogram.o objects/xpatience.o   objects/charset.o objects/json.o objects/main.o objects/memfile.o objects/message.o            -lm  -ltinfo
 link.sh: Linked fine
 make[1]: Leaving directory '/workspace/scratch/319ec9cb93e8/vim9-lua/upstream/vim/src'

@@ -1,0 +1,83 @@
+Starting make in the src directory.
+If there are problems, cd to the src directory and run make there
+cd src && make distclean
+make[1]: Entering directory '/workspace/scratch/319ec9cb93e8/vim9-lua/upstream/vim/src'
+rm -f auto/config.cache
+if test "Xdistclean" != "Xclean" \
+	-a "Xdistclean" != "Xdistclean" \
+	-a "Xdistclean" != "Xautoconf" \
+	-a "Xdistclean" != "Xreconfig"; then \
+    GUI_INC_LOC="" GUI_LIB_LOC="" \
+	CC="gcc" CPPFLAGS="" CFLAGS="-g -O2 -D_REENTRANT -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1" \
+	LDFLAGS="-L/workspace/scratch/319ec9cb93e8/vim9-lua/upstream/vim/.deps/lib -L/usr/local/lib -Wl,--as-needed"  srcdir="." \
+	./configure    \
+	   \
+	   \
+	   \
+	   \
+	  \
+	  \
+	   \
+	  \
+	    \
+	   \
+	  \
+	  \
+	  ; \
+fi
+cd testdir; make -f Makefile clean
+make[2]: Entering directory '/workspace/scratch/319ec9cb93e8/vim9-lua/upstream/vim/src/testdir'
+rm -rf *.out *.failed *.res *.rej *.orig XfakeHOME Xdir1 Xfind failed
+rm -f opt_test.vim test_result.log test.log messages starttime
+rm -f gen_opt_test.log
+rm -rf test.out X* viminfo test.ok benchmark.out
+rm -f valgrind.*
+rm -f asan.* asan_test_*
+rm -f guidialog guidialogfile
+make[2]: Leaving directory '/workspace/scratch/319ec9cb93e8/vim9-lua/upstream/vim/src/testdir'
+if test -d po; then \
+	cd po; make checkclean; \
+fi
+make[2]: Entering directory '/workspace/scratch/319ec9cb93e8/vim9-lua/upstream/vim/src/po'
+rm -f *.ck
+make[2]: Leaving directory '/workspace/scratch/319ec9cb93e8/vim9-lua/upstream/vim/src/po'
+rm -f *.o core vim.core vim vim
+rm -rf objects
+rm -f auto/osdef.h auto/pathdef.c auto/if_perl.c auto/gui_gtk_gresources.c auto/gui_gtk_gresources.h auto/os_haiku.rdef
+rm -f conftest* *~ auto/link.sed
+rm -f testdir/opt_test.vim
+rm -f json_test kword_test memfile_test message_test
+rm -f runtime pixmaps
+rm -f mzscheme_base.c
+rm -rf libvterm/.libs libvterm/src/.libs libvterm/t/.libs libvterm/src/*.o libvterm/src/*.lo libvterm/t/*.o libvterm/t/*.lo libvterm/t/harness libvterm/libvterm.la
+if test -d po; then \
+	cd po; make prefix=/usr/local clean; \
+fi
+make[2]: Entering directory '/workspace/scratch/319ec9cb93e8/vim9-lua/upstream/vim/src/po'
+rm -f *.ck
+rm -f core core.* *.old.po *.mo sjiscorr
+rm -f LINGUAS vim.desktop gvim.desktop tmp_*desktop
+rm -f ./allfiles
+make[2]: Leaving directory '/workspace/scratch/319ec9cb93e8/vim9-lua/upstream/vim/src/po'
+cd xxd; make clean
+make[2]: Entering directory '/workspace/scratch/319ec9cb93e8/vim9-lua/upstream/vim/src/xxd'
+rm -f xxd xxd.o
+rm -rf xxd.dSYM
+make[2]: Leaving directory '/workspace/scratch/319ec9cb93e8/vim9-lua/upstream/vim/src/xxd'
+cd auto/wayland; make clean
+make[2]: Entering directory '/workspace/scratch/319ec9cb93e8/vim9-lua/upstream/vim/src/auto/wayland'
+rm -f *.c *.h
+make[2]: Leaving directory '/workspace/scratch/319ec9cb93e8/vim9-lua/upstream/vim/src/auto/wayland'
+rm -f auto/config.status auto/config.cache config.log auto/config.log
+rm -f auto/config.h auto/link.log auto/link.sed auto/config.mk
+touch auto/config.h
+cp config.mk.dist auto/config.mk
+rm -f tags
+make[1]: Leaving directory '/workspace/scratch/319ec9cb93e8/vim9-lua/upstream/vim/src'
+make[1]: Entering directory '/workspace/scratch/319ec9cb93e8/vim9-lua/upstream/vim/runtime/indent'
+rm -f testdir/*.fail testdir/*.out
+make[1]: Leaving directory '/workspace/scratch/319ec9cb93e8/vim9-lua/upstream/vim/runtime/indent'
+make[1]: Entering directory '/workspace/scratch/319ec9cb93e8/vim9-lua/upstream/vim/runtime/syntax'
+./testdir/tools/maketestdeps clean executables test testclean > testdir/testdeps.mk
+rm -f testdir/failed/* testdir/done/* testdir/vimcmd testdir/messages testdir/Xtestscript testdir/Xfilter testdir/testdeps.mk
+make[1]: Leaving directory '/workspace/scratch/319ec9cb93e8/vim9-lua/upstream/vim/runtime/syntax'

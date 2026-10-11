@@ -6,17 +6,28 @@ local function write(path,text)
  vim.fn.mkdir(vim.fn.fnamemodify(root..'/'..path,':h'),'p')
  vim.fn.writefile(vim.split(text,'\n',{plain=true}),root..'/'..path,'b')
 end
+-- Anchor the selected ranges to their containing definitions; the offsets
+-- describe the selected unchanged bodies, not absolute upstream line numbers.
+local function find(text)
+ for i,line in ipairs(lines) do if line==text then return i end end
+ error('Upstream fixture anchor missing: '..text)
+end
+local import_delta=find('let s:export_script_lines =<< trim END')-8
+local reload_delta=find('def Test_vim9_reload_noclear()')-1513
+local function current(n) return n+(n<1500 and import_delta or reload_delta) end
 local function slice(a,b,indent)
+ a,b=current(a),current(b)
  local xs={};for i=a,b do xs[#xs+1]=lines[i]:sub(indent+1) end;return table.concat(xs,'\n')..'\n'
 end
 local function case(id,source,files,ranges,kind)
  local dir='tests/m3/'..id;local supports={}
+ if ranges then for _,range in ipairs(ranges) do range[1],range[2]=current(range[1]),current(range[2]) end end
  for name,text in pairs(files) do write(dir..'/'..name,text);supports[#supports+1]={file=dir..'/'..name,name=name,sha256=vim.fn.sha256(text)} end
  table.sort(supports,function(a,b) return a.name<b.name end)
  write(dir..'/case.vim',source)
  manifest[#manifest+1]={id=id,file=dir..'/case.vim',sha256=vim.fn.sha256(source),support_files=supports,
  origin=kind or 'official-derived',upstream=kind and nil or upstream,upstream_sha256=kind and nil or vim.fn.sha256(table.concat(lines,'\n')..'\n'),
- commit='eb49041875118be5fe60f07750c7c86cb26dccef',ranges=ranges,
+ commit='b2b47bdf9401c865780dd4c47b1dbafb0463c75a',ranges=ranges,
  adaptation='Selected bodies with indentation removed; setup/source/assertion wrapper replaces writefile and delete helpers'}
  if kind then
   local item=manifest[#manifest];item.upstream=nil;item.upstream_sha256=nil;item.commit=nil

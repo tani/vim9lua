@@ -257,7 +257,7 @@ function State:statement(n,env)
  elseif k=='while' then
   local scope=Env.new(env);local iterations=0
   while V.truth(self:expr(n.cond,env)) do
-   scope.repeating=iterations>0;iterations=iterations+1;local signal=self:block(n.body,scope)
+   scope.repeating=iterations>0;iterations=iterations+1;local signal=self:block(n.body,Env.new(scope))
    if signal then if signal.kind=='break' then break elseif signal.kind~='continue' then return signal end end
   end
  elseif k=='for' then
@@ -274,7 +274,7 @@ function State:statement(n,env)
     if item.kind~='list' or #item.data~=#n.names then E.raise('E688','More targets than List items',n) end
     for j,name in ipairs(n.names) do scope:declare(name.name,item.data[j],'var',n) end
    else scope:declare(n.names[1].name,item,'var',n) end
-   local signal=self:block(n.body,scope)
+   local signal=self:block(n.body,Env.new(scope))
    if signal then if signal.kind=='break' then break elseif signal.kind~='continue' then return signal end end
    i=i+1
   end

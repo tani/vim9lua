@@ -151,6 +151,8 @@ function Parser:statement()
  local t=self:peek();local k=t.text
  if k=='vim9script' or k=='defcompile' then
   self:take();return node(k,t,{noclear=k=='vim9script' and self:accept('noclear')~=nil})
+ elseif k=='++' or k=='--' then
+  self:take();return node('assign',t,{target=self:expr(6),op=k=='++' and '+=' or '-=',value=node('literal',t,{kind='number',value='1'})})
  elseif k=='var' or k=='const' or k=='final' then
   self:take();local name=self:identifier();local annotation,value
   if name:sub(-1)==':' then name=name:sub(1,-2);annotation=self:type({['=']=true})

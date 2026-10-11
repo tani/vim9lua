@@ -104,6 +104,20 @@ function M.install(state)
   if v.kind=='list' then local xs={};for i,x in ipairs(v.data) do if V.truth(state:call(a[2],{V.int(i-1),x},env)) then xs[#xs+1]=x end end;v.data=xs
   else for k,x in pairs(v.data) do if not V.truth(state:call(a[2],{V.string(k),x},env)) then v.data[k]=nil end end end;return v
  end)
+ def('isinf',1,1,function(a)
+  local n=V.num(a[1]);return V.int(n==math.huge and 1 or n==-math.huge and -1 or 0)
+ end)
+ def('items',1,1,function(a)
+  local value=a[1];local xs={}
+  if value.kind=='dict' then
+   for key,item in pairs(value.data) do xs[#xs+1]=V.list({V.string(key),item}) end
+  elseif value.kind=='string' then
+   for i,item in ipairs(vim.fn.split(value.data,'\\zs')) do xs[#xs+1]=V.list({V.int(i-1),V.string(item)}) end
+  elseif value.kind=='list' or value.kind=='blob' then
+   for i,item in ipairs(value.data) do xs[#xs+1]=V.list({V.int(i-1),value.kind=='blob' and V.int(item) or item}) end
+  else E.raise('E1251','List, Tuple, Dictionary, Blob or String required for argument 1') end
+  return V.list(xs)
+ end)
  def('getcwd',0,0,function() return V.string(vim.fn.getcwd()) end)
  def('has',1,1,function(a) local n=V.text(a[1]);return V.int((n=='vim9script' or n=='float' or n=='num64') and 1 or 0) end)
  def('exists',1,1,function(a,env)

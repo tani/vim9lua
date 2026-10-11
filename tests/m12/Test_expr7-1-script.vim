@@ -35,11 +35,9 @@ var x = [2]
 var y = [3]
 assert_equal(5, x[0] + y[0])
 assert_equal(6, x[0] * y[0])
-if has('float')
-  var xf = [2.0]
-  var yf = [3.0]
-  assert_equal(5.0, xf[0]
-                      + yf[0])
-  assert_equal(6.0, xf[0]
-                      * yf[0])
-endif
+var xf = [2.0]
+var yf = [3.0]
+assert_equal(5.0, xf[0]
+                    + yf[0])
+assert_equal(6.0, xf[0]
+                    * yf[0])

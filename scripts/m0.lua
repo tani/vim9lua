@@ -21,7 +21,8 @@ local function checked(cmd, opts)
 end
 local function sha(repo) return checked({'git', '-C', path(repo), 'rev-parse', 'HEAD'}) end
 local function verify()
-  assert(sha('upstream/vim')=='eb49041875118be5fe60f07750c7c86cb26dccef','Vim reference revision changed')
+  assert(sha('upstream/vim')=='b2b47bdf9401c865780dd4c47b1dbafb0463c75a','Vim reference revision changed')
+  assert(vim.trim(read(path('.deps/vim-build-commit')))==sha('upstream/vim'),'Reference binary is stale; run make bootstrap')
   assert(sha('upstream/vim9jit')=='4fc236e753127081efad57cd5f91cf81c2bd3269','vim9jit revision changed')
   for _,repo in ipairs({'upstream/vim','upstream/vim9jit'}) do
     checked({'git','-C',path(repo),'diff','--exit-code','HEAD','--'})
@@ -67,7 +68,7 @@ end
 local function lock()
   local version = checked({vim.v.progpath,'--version'})
   assert(version:match('NVIM v0%.11%.3'), 'Host must be Neovim 0.11.3')
-  local result={format=1,vim={url='https://github.com/vim/vim.git',tag='v9.0.0000',commit=sha('upstream/vim')},
+  local result={format=1,vim={url='https://github.com/vim/vim.git',tag='v9.2.1172',commit=sha('upstream/vim')},
     vim9jit={url='https://github.com/tjdevries/vim9jit.git',commit=sha('upstream/vim9jit')},
     reference_build={version=checked({path('upstream/vim/src/vim'),'--version'}),configure={'--with-features=huge','--enable-gui=no','--without-x','--disable-nls','--with-tlib=tinfo'}},
     host={version='0.11.3',archive_sha256='02b808a3ee8fc30161e07fe3c3edfb24b28bd0295323ac5dbdd8ec7012cac67d',details=version,lpeg=type(lpeg.version)=='function' and lpeg.version() or lpeg.version},
@@ -119,7 +120,7 @@ local function reference()
       local name=vim.fn.fnamemodify(file.file,':t')
       -- Upstream runtest writes .res/messages/test.log; reset its known outputs.
       for _,f in ipairs({'messages','test.log', name:gsub('%.vim$','.res')}) do vim.fn.delete(dir..'/'..f) end
-      local r=process({bin,'-f','-u','unix.vim','-i','NONE','--noplugin','--not-a-term',
+      local r=process({bin,'-f','-u','util/unix.vim','-i','NONE','--noplugin','--not-a-term',
         '-S','runtest.vim',name}, {cwd=dir,env={VIMRUNTIME=path('upstream/vim/runtime'),
         TEST_NO_RETRY='yes',TEST_FILTER='',TEST_SKIP_PAT='',TEST_MAY_FAIL='',TERM='xterm'}})
       local message=vim.fn.filereadable(dir..'/messages')==1 and read(dir..'/messages') or ''
@@ -134,16 +135,18 @@ local function reference()
         for _,t in ipairs(executed) do if t.name==test then t.status='SKIP'; t.reason=reason end end
       end
       local passed=completed and #executed>0 and log:match('^%s*$') ~= nil and r.code==0
-      local status=passed and 'PASS' or (log:match('%S') and 'FAIL' or 'HARNESS_ERROR')
+      local suite_skip=completed and r.code==0 and not log:match('%S') and message:find('SKIPPED '..name..':',1,true)
+      local status=passed and 'PASS' or suite_skip and 'SKIP' or (log:match('%S') and 'FAIL' or 'HARNESS_ERROR')
       results[#results+1]={file=file.file,status=status,exit_code=r.code,signal=r.signal,
         messages=message,errors=log,stdout=r.stdout,stderr=r.stderr,
         attempted=#executed,passed=passed and (#executed-#skipped) or nil,skipped=skipped,
+        skip_reason=suite_skip and message:match('SKIPPED '..name:gsub('%.','%%.')..': ([^\n]*)') or nil,
         tests=passed and executed or nil}
       json(path('reports/reference.json'),{vim_commit=sha('upstream/vim'),suites=results})
       print(name..': '..status)
     end
   end
-  for _,result in ipairs(results) do if result.status~='PASS' then return false end end
+  for _,result in ipairs(results) do if result.status~='PASS' and result.status~='SKIP' then return false end end
   return true
 end
 local function classify(reference_result,candidate)

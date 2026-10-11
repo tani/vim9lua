@@ -1,14 +1,11 @@
 def Func()
-var flist: list<func>
+var Clo: func
 for i in range(5)
-  var inloop = i
-  flist[i] = () => {
-        return inloop
-      }
+  if i == 3
+    Clo = () => i
+  endif
 endfor
-for i in range(5)
-  assert_equal(4, flist[i]())
-endfor
+assert_equal(4, Clo())
 enddef
 defcompile
 call Func()

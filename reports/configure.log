@@ -3,27 +3,21 @@ checking whether make sets $(MAKE)... yes
 checking for gcc... gcc
 checking whether the C compiler works... yes
 checking for C compiler default output file name... a.out
-checking for suffix of executables... 
+checking for suffix of executables...
 checking whether we are cross compiling... no
 checking for suffix of object files... o
-checking whether we are using the GNU C compiler... yes
+checking whether the compiler supports GNU C... yes
 checking whether gcc accepts -g... yes
-checking for gcc option to accept ISO C89... none needed
-checking for gcc option to accept ISO C99... none needed
+checking for gcc option to enable C11 features... none needed
 checking how to run the C preprocessor... gcc -E
 checking for grep that handles long lines and -e... /usr/bin/grep
 checking for egrep... /usr/bin/grep -E
 checking for fgrep... /usr/bin/grep -F
-checking for library containing strerror... none required
 checking for gawk... no
 checking for mawk... mawk
 checking for strip... strip
-checking for ANSI C header files... yes
 checking for sys/wait.h that is POSIX.1 compatible... yes
-checking for unsigned long long int... yes
-checking for long long int... yes
-checking if the compiler supports trailing commas... yes
-checking if the compiler supports C++ comments... yes
+checking for pkg-config... no
 checking --enable-fail-if-missing argument... no
 checking for clang version... N/A
 checking for buggy tools... checking uname... Linux
@@ -32,18 +26,20 @@ checking uname -m... x86_64
 checking for Haiku... no
 checking for QNX... no
 checking for Darwin (Mac OS X)... no
-checking for sys/types.h... yes
-checking for sys/stat.h... yes
+checking for stdio.h... yes
 checking for stdlib.h... yes
 checking for string.h... yes
-checking for memory.h... yes
-checking for strings.h... yes
 checking for inttypes.h... yes
 checking for stdint.h... yes
+checking for strings.h... yes
+checking for sys/stat.h... yes
+checking for sys/types.h... yes
 checking for unistd.h... yes
-checking AvailabilityMacros.h usability... no
-checking AvailabilityMacros.h presence... no
+checking for sys/time.h... yes
+checking for sys/select.h... yes
+checking for sys/socket.h... yes
 checking for AvailabilityMacros.h... no
+checking for dispatch/dispatch.h... no
 checking --with-local-dir argument... Defaulting to /usr/local
 checking --with-vim-name argument... Defaulting to vim
 checking --with-ex-name argument... Defaulting to ex
@@ -52,14 +48,14 @@ checking --with-global-runtime argument... no
 checking --with-modified-by argument... no
 checking if character set is EBCDIC... no
 checking --disable-smack argument... no
-checking linux/xattr.h usability... yes
-checking linux/xattr.h presence... yes
 checking for linux/xattr.h... yes
-checking attr/xattr.h usability... no
-checking attr/xattr.h presence... no
-checking for attr/xattr.h... no
+checking for sys/xattr.h... yes
+checking for XATTR_NAME_SMACKEXEC in linux/xattr.h... checking for egrep -e... (cached) /usr/bin/grep -E
+no
 checking --disable-selinux argument... no
 checking for is_selinux_enabled in -lselinux... no
+checking --enable-xattr argument... yes
+checking for sys/xattr.h... (cached) yes
 checking --with-features argument... huge
 checking --with-compiledby argument... no
 checking --disable-xsmp argument... no
@@ -72,10 +68,11 @@ checking --enable-pythoninterp argument... no
 checking --enable-python3interp argument... no
 checking --enable-tclinterp argument... no
 checking --enable-rubyinterp argument... no
-checking --enable-cscope argument... no
+checking --enable-cscope argument... yes
 checking --disable-netbeans argument... no
 checking --disable-channel argument... no
 checking for socket in -lsocket... no
+checking for gethostbyname in -lnsl... no
 checking whether compiling with IPv6 networking is possible... yes
 checking for inet_ntop... yes
 checking --enable-terminal argument... defaulting to yes
@@ -85,152 +82,84 @@ checking --disable-rightleft argument... no
 checking --disable-arabic argument... no
 checking --enable-xim argument... defaulting to auto
 checking --enable-fontset argument... no
+checking --with-wayland argument... yes
+checking for wayland... auto/configure: line 9221: no: command not found
+no
+checking for cairo... auto/configure: line 9261: no: command not found
+no
+checking for pango... auto/configure: line 9282: no: command not found
+no
+checking --enable-pixman argument... auto
+checking for pixman... auto/configure: line 9318: no: command not found
+no
 defaulting to: don't HAVE_X11
 checking --enable-gui argument... no GUI support
-checking for pkg-config... no
-checking X11/SM/SMlib.h usability... no
-checking X11/SM/SMlib.h presence... no
-checking for X11/SM/SMlib.h... no
+checking --enable-hardcopy-pango argument... no, Pango or Cairo not found
 checking for /proc link to executable... /proc/self/exe
 checking for CYGWIN or MSYS environment... no
 checking whether toupper is broken... no
 checking whether __DATE__ and __TIME__ work... yes
 checking whether __attribute__((unused)) is allowed... yes
-checking elf.h usability... yes
-checking elf.h presence... yes
-checking for elf.h... yes
-checking for main in -lelf... no
 checking for dirent.h that defines DIR... yes
 checking for library containing opendir... none required
+checking for sys/wait.h... (cached) yes
+checking for waitpid... yes
 checking for stdint.h... (cached) yes
 checking for stdlib.h... (cached) yes
 checking for string.h... (cached) yes
-checking sys/select.h usability... yes
-checking sys/select.h presence... yes
-checking for sys/select.h... yes
-checking sys/utsname.h usability... yes
-checking sys/utsname.h presence... yes
+checking for sys/select.h... (cached) yes
 checking for sys/utsname.h... yes
-checking termcap.h usability... no
-checking termcap.h presence... no
 checking for termcap.h... no
-checking fcntl.h usability... yes
-checking fcntl.h presence... yes
 checking for fcntl.h... yes
-checking sgtty.h usability... yes
-checking sgtty.h presence... yes
 checking for sgtty.h... yes
-checking sys/ioctl.h usability... yes
-checking sys/ioctl.h presence... yes
 checking for sys/ioctl.h... yes
-checking sys/time.h usability... yes
-checking sys/time.h presence... yes
-checking for sys/time.h... yes
+checking for sys/time.h... (cached) yes
 checking for sys/types.h... (cached) yes
-checking termio.h usability... yes
-checking termio.h presence... yes
 checking for termio.h... yes
-checking iconv.h usability... yes
-checking iconv.h presence... yes
 checking for iconv.h... yes
 checking for inttypes.h... (cached) yes
-checking langinfo.h usability... yes
-checking langinfo.h presence... yes
 checking for langinfo.h... yes
-checking math.h usability... yes
-checking math.h presence... yes
 checking for math.h... yes
 checking for unistd.h... (cached) yes
-checking stropts.h usability... no
-checking stropts.h presence... no
 checking for stropts.h... no
-checking errno.h usability... yes
-checking errno.h presence... yes
 checking for errno.h... yes
-checking sys/resource.h usability... yes
-checking sys/resource.h presence... yes
 checking for sys/resource.h... yes
-checking sys/systeminfo.h usability... no
-checking sys/systeminfo.h presence... no
 checking for sys/systeminfo.h... no
-checking locale.h usability... yes
-checking locale.h presence... yes
 checking for locale.h... yes
-checking sys/stream.h usability... no
-checking sys/stream.h presence... no
 checking for sys/stream.h... no
-checking termios.h usability... yes
-checking termios.h presence... yes
 checking for termios.h... yes
-checking libc.h usability... no
-checking libc.h presence... no
 checking for libc.h... no
-checking sys/statfs.h usability... yes
-checking sys/statfs.h presence... yes
 checking for sys/statfs.h... yes
-checking poll.h usability... yes
-checking poll.h presence... yes
 checking for poll.h... yes
-checking sys/poll.h usability... yes
-checking sys/poll.h presence... yes
 checking for sys/poll.h... yes
-checking pwd.h usability... yes
-checking pwd.h presence... yes
 checking for pwd.h... yes
-checking utime.h usability... yes
-checking utime.h presence... yes
 checking for utime.h... yes
-checking sys/param.h usability... yes
-checking sys/param.h presence... yes
 checking for sys/param.h... yes
-checking sys/ptms.h usability... no
-checking sys/ptms.h presence... no
 checking for sys/ptms.h... no
-checking libintl.h usability... yes
-checking libintl.h presence... yes
 checking for libintl.h... yes
-checking libgen.h usability... yes
-checking libgen.h presence... yes
 checking for libgen.h... yes
-checking util/debug.h usability... no
-checking util/debug.h presence... no
 checking for util/debug.h... no
-checking util/msg18n.h usability... no
-checking util/msg18n.h presence... no
 checking for util/msg18n.h... no
-checking frame.h usability... no
-checking frame.h presence... no
 checking for frame.h... no
-checking sys/acl.h usability... no
-checking sys/acl.h presence... no
 checking for sys/acl.h... no
-checking sys/access.h usability... no
-checking sys/access.h presence... no
 checking for sys/access.h... no
-checking sys/sysinfo.h usability... yes
-checking sys/sysinfo.h presence... yes
 checking for sys/sysinfo.h... yes
-checking wchar.h usability... yes
-checking wchar.h presence... yes
 checking for wchar.h... yes
-checking wctype.h usability... yes
-checking wctype.h presence... yes
 checking for wctype.h... yes
 checking for sys/ptem.h... no
 checking for sys/sysctl.h... no
 checking for pthread_np.h... no
 checking for strings.h... (cached) yes
 checking if strings.h can be included after string.h... yes
-checking whether gcc needs -traditional... no
 checking for an ANSI C-conforming const... yes
 checking for working volatile... yes
 checking for mode_t... yes
 checking for off_t... yes
 checking for pid_t... yes
 checking for size_t... yes
-checking for uid_t in sys/types.h... yes
+checking for uid_t... yes
+checking for gid_t... yes
 checking for uint32_t... yes
-checking whether time.h and sys/time.h may both be included... yes
 checking for ino_t... yes
 checking for dev_t... yes
 checking whether byte ordering is bigendian... no
@@ -309,26 +238,23 @@ checking for mblen... yes
 checking for ftruncate... yes
 checking for unsetenv... yes
 checking for posix_openpt... yes
-checking for sys/select.h... (cached) yes
-checking sys/socket.h usability... yes
-checking sys/socket.h presence... yes
-checking for sys/socket.h... yes
+checking for clock_gettime... yes
+checking for sync... yes
 checking types of arguments for select... int,fd_set *,struct timeval *
-checking for _LARGEFILE_SOURCE value needed for large files... no
-checking for special C compiler options needed for large files... no
-checking for _FILE_OFFSET_BITS value needed for large files... no
+checking for declarations of fseeko and ftello... yes
+checking for  option for large files... none needed
 checking --enable-canberra argument... Defaulting to yes
 checking for libcanberra... no; try installing libcanberra-dev
 checking --enable-libsodium argument... Defaulting to yes
 checking for libsodium... no; try installing libsodium-dev
 checking for st_blksize... yes
-checking for timer_create... yes; with -lrt
+checking for timer_create without -lrt... yes
+checking if timer_create works... yes
 checking whether stat() ignores a trailing slash... no
 checking for nanoseconds field of struct stat... st_mtim.tv_nsec
 checking for iconv_open()... yes
 checking for nl_langinfo(CODESET)... yes
 checking for strtod in -lm... yes
-checking for strtod() and other floating point functions... yes
 checking for isinf()... yes
 checking for isnan()... yes
 checking --disable-acl argument... no
@@ -362,13 +288,9 @@ checking for _xpg4_setrunelocale in -lxpg4... no
 checking how to create tags... ctags
 checking how to run man with a section nr... man -s
 checking --disable-nls argument... yes
-checking dlfcn.h usability... yes
-checking dlfcn.h presence... yes
 checking for dlfcn.h... yes
 checking for dlopen()... yes
 checking for dlsym()... yes
-checking setjmp.h usability... yes
-checking setjmp.h presence... yes
 checking for setjmp.h... yes
 checking for GCC 3 or later... yes
 checking whether we need -D_FORTIFY_SOURCE=1... yes

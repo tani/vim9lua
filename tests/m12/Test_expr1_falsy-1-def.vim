@@ -13,18 +13,14 @@ assert_equal(123, 123 ?? 456)
 assert_equal('yes', 'yes' ?? 456)
 assert_equal([1], [1] ?? 456)
 assert_equal({one: 1}, {one: 1} ?? 456)
-if has('float')
-  assert_equal(0.1, 0.1 ?? 456)
-endif
+assert_equal(0.1, 0.1 ?? 456)
 
 assert_equal(456, v:false ?? 456)
 assert_equal(456, 0 ?? 456)
 assert_equal(456, '' ?? 456)
 assert_equal(456, [] ?? 456)
 assert_equal(456, {} ?? 456)
-if has('float')
-  assert_equal(456, 0.0 ?? 456)
-endif
+assert_equal(456, 0.0 ?? 456)
 enddef
 defcompile
 call Func()

@@ -69,6 +69,9 @@ if true || x
   g:vals = [1]
 endif
 assert_equal([1], g:vals)
+
+# string interpolation with ||
+assert_equal('true', $"{0 || 1}")
 enddef
 defcompile
 call Func()
