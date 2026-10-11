@@ -1,76 +1,76 @@
 # Implementation loop checkpoint
 
-## Revision and execution profile
+## Revision, profile and preserved work
 
-- Branch: `main`; implementation/evidence checkpoint: `850e465` (`Respect bracket postfix adjacency and verify adjacent list arguments`). This resume record is committed separately. Previous resume baseline: `b4214a3`, following message-observation implementation `8619aef`. No push performed.
-- Reference Vim remains `b2b47bdf9401c865780dd4c47b1dbafb0463c75a` / v9.2.1172; vim9jit remains `4fc236e753127081efad57cd5f91cf81c2bd3269`.
-- Profile remains `linux-x86_64-huge-terminal-no-gui-no-python3-neovim-0.11.3`. Reference configure arguments, features and pinned revisions were not changed in this iteration. The previous bootstrap recorded the actual rebuilt binary's timestamp/host in `sources.lock.json`; it was not a reference update.
-- User approved installing amd64 binfmt/QEMU support on the arm64 host. Run pinned executables in local Docker image `vim9lua-loop-amd64:local` (image ID `sha256:3c0d7c6ca76aaf4bb55c66744b6d965befb1393bd0f47b33b5eebf508c92956e`), with both `LANG` and `LC_ALL` set to `C.UTF-8`.
-- Image prerequisites include build tools, libtinfo/libacl development libraries, external Python3, procps and unzip. External Python does not enable embedded Vim Python: reference remains `-python3`.
-- Dependency sources, pinned binaries and the reusable runner image are retained. The throwaway `.deps/postfix-smoke.lua` was removed after verification. No upstream test, helper or expectation was modified.
+- Branch: `main`; implementation/evidence checkpoint: `6f272ba` (`Execute legacy comparator source and validate raw whole evidence`). This resume record is committed separately. Previous checkpoint: `d16d499`, implementation `850e465`. No push performed.
+- Reference Vim remains `b2b47bdf9401c865780dd4c47b1dbafb0463c75a` / v9.2.1172; vim9jit remains `4fc236e753127081efad57cd5f91cf81c2bd3269`. No lock, reference feature/configure or binary change was made.
+- Profile remains `linux-x86_64-huge-terminal-no-gui-no-python3-neovim-0.11.3`. On this arm64 host use the previously approved amd64 binfmt/QEMU support and local Docker image `vim9lua-loop-amd64:local`, image ID `sha256:3c0d7c6ca76aaf4bb55c66744b6d965befb1393bd0f47b33b5eebf508c92956e`, with `LANG=LC_ALL=C.UTF-8`.
+- Image prerequisites include build tools, libtinfo/libacl development libraries and external Python3/procps/unzip. The reference itself remains `-python3`. Pinned sources/binaries and this image are retained.
+- Initial worktree contained a pre-existing modification to `tests/m3/manifest.json`. Its exact bytes were backed up, restored after generators, verified with `cmp -s`, and deliberately not staged or committed. That pre-existing modification remains the user's. The generated and initial manifests had identical JSON semantics; only their serialization differed.
+- Disposable comparator/strictness scripts and the manifest backup were removed after final verification. No official source, helper or expected result was modified.
 
-## Selected obligation and observed improvement
+## Selected obligation and acceptance boundary
 
-Target: `test_vim9_expr.vim::Test_expr9_list_vim9script`, positive bodies 2632–2646 and 2651–2653, under the original `CheckDefAndScriptSuccess` script/def wrappers. The related `Test_expr9_list` echo excerpt 2570–2572 was also exercised by a disposable differential probe; its complete success body was not selected because additional builtin/type behavior remains unsupported.
+Target is the complete unchanged `upstream/vim/src/testdir/test_comparators.vim::Test_Comparators`: whole 14-line file, original function at 3–11. The file has no local preparation helpers, SetUp or TearDown. Its body saves `&isident`, performs `set isident+=#`, asserts `1 is#1` has the legacy numeric result, then restores the option in `finally`.
 
-Success conditions were recorded before editing: separated list command arguments must match assertions, exception text and exact emitted text; attached indexes/slices/chains and multiline interiors must retain behavior; separated brackets must stop being accepted as indexes in single-expression contexts. Exact negative diagnostics/stages, unrelated call/member/method whitespace rules and whole-test adapters were outside this parser unit.
+The initial original-runner reference succeeded in a pristine tracked testdir copy: exit 0, `.res` present, `Executed Test_Comparators()`, no errors. Candidate source failed at the opening legacy comment with `UNSUPPORTED`, line 1, `Unrecognized token at column 1`; invocation was not reached.
 
-Before:
+This iteration implements the genuine source/body prerequisites and closes unsafe whole-result ingestion. Acceptance: source the unchanged original file, invoke its original function repeatedly, measure actual option mutation/restoration and legacy return values, retain Vim9 behavior and session isolation, and reject malformed/forged whole evidence. Inherited runner execution and nine-channel recording are still separate obligations; no adapter is registered and no whole result is produced.
 
-- Both official multiline echo excerpts succeeded on reference but failed eagerly in candidate with `E15: Expected ], got ,`, zero execution steps and no output.
-- `echo 17 true [1, 2]` likewise failed instead of producing `17 true [1, 2]`.
-- Space/tab-separated `var value = [1, 2] [0]` succeeded incorrectly in candidate; reference rejected it with `E488: Trailing characters: [0]`.
+## Implemented and exercised changes
 
-After:
+- Lexer/parser retain token offsets and switch legacy/Vim9 comment and expression contexts at real directives and function boundaries. File `source` begins legacy and switches at `vim9script`; snippet `parse`/`run`/`expression` defaults remain Vim9, with explicit `opts.dialect = 'legacy'`. `def` bodies remain Vim9 and `function`/`func` bodies legacy.
+- Legacy compact `let` creates cells in the correct function/script/global owner, rather than a temporary try block. Arguments use their `a:` namespace and readonly bindings. Globals/private functions preserve defining scope and filename; same-file re-source replaces a definition, unrelated duplicate definitions return E122. Implicit legacy return is numeric zero.
+- Legacy comparison/logical results are tagged Numbers; Vim9 remains Bool. Identity rejects differing value kinds without weakening `assert_equal`. Infix identity suffixes no longer split primary autoload identifiers. Dynamic expression callers retain their active dialect.
+- `Session:call(name, args, opts)` invokes an already-defined function as an observed action. Args default to `{}` and must be tagged values from `vim9.values`; the successful result includes tagged `value`. `opts.filename` selects an already-sourced scope for explicit `s:` calls, otherwise the current root; execution uses the function's defining context.
+- `Session:getoption('isident'|'isi')` returns the actual string; `Session:options()` returns an independent snapshot. This is per-session emulator-owned option state, initialized from the pinned Unix default `@,48-57,_,192-255`, not shared Neovim options. Supported simple assignment/append/prepend/remove/show uses the pinned comma/no-duplicate option semantics and preserves state on invalid values.
+- The original candidate file now sources without body effects, and its original function was called twice, re-sourced, and called again. All calls passed with empty failed assertions, exception and emitted output, numeric return 0, and exact initial/final option agreement with an independent pinned-reference source/call probe.
+- Temporary observation around the actual option setter captured three real pairs: `@,48-57,_,192-255` → `@,48-57,_,192-255,#` → `@,48-57,_,192-255`. The setter was executed, not replaced by a mock. Final state alone was not used to infer mutation.
+- `compare.compare_whole` validates and compares all nine typed raw phase journals. `ledger.credit_whole` and `scripts/progress.lua` recompute verdict/checks, require summary agreement, validate actual source/implementation/dependency bytes and complete lifecycle provenance, and reject duplicate ids. Registration and raw observations must bind the complete `source::Test_` identity in the result and both independent runs.
+- Existing conformance docs specify the consumer format and its eight phases: startup, preparation, source, setup, body, teardown, cleanup, finish. This is a complete consumer implementation, not an execution producer. Empty adapter registration remains unchanged; boolean-only results cannot confer credit.
+- Unit coverage exercises original source/body execution, local/argument/private/global semantics, genuine throwing-finally cleanup, replacement/filename identity, option duplicates/errors/isolation and dialect boundaries. Consumer tests reject each missing/malformed/divergent channel, incomplete phases, forged summaries, stale byte hashes/provenance and same-file test relabeling. Integration launches the actual strict progress CLI with negative controls.
 
-- `Parser:expr` consumes postfix `[` only when its token start equals the preceding consumed token's exclusive finish. The shared grammar rule has no test/fixture-name special cases. Spaces/tabs therefore separate list command arguments rather than index the previous operand.
-- Differential smoke matched both official excerpts in script and def contexts, plus authored mixed scalar/list, singleton, spaces/tabs, consecutive lists, attached index/slice, multiline interiors and method-return boundaries. Each positive comparison observed assertions, exception text and exact emitted messages.
-- Unit coverage exercises attached/chained, parenthesized/call/member-result indexing, slices, comment/newline interiors, existing method continuation and literal `eval` consumers. Space/tab-separated brackets are rejected by expression and declaration parsers without pinning an incorrect diagnostic or stage.
-- Four generated M1/M2 samples retain pinned source hashes/ranges, parent identity and original-helper wrapper provenance. The negative tail 2657–2697 and omitted parent/helper preparation remain explicit extraction debt. No parent function was promoted to whole equivalence.
-- Added authored `tests/regression/adjacent-list-arguments.vim`, automatically indexed and executed by `test`/`assess`. Valid `execute 'echo' string([1, 2]) string([3, 4])` also exercises parsing of the generated multi-list command. Authored tests do not enter the official denominator.
+## Verification and current evidence
 
-## Verification and evidence
+Commands used the preserved amd64/UTF-8 runner.
 
-All commands used the preserved amd64 image and UTF-8 locale unless noted.
-
-- Initial `make progress-check`: exit 0 against the previous committed evidence.
-- Before-change disposable differential reproduction: exit 0; reference succeeded and candidate failed for the selected positive inputs; reference rejected and candidate accepted separated-bracket declarations. The probe recorded the mismatch rather than claiming compatibility.
-- After-change disposable differential smoke with `--verify`: exit 0. Six positive script/def comparisons matched. Negative declarations now return candidate `UNSUPPORTED`; stage probes retain the discrepancies described below.
-- Initial combined local command (`smoke --verify && make unit conformance-unit m12 regression m3`): exit 2 at regression. Unit, conformance unit and all 87 M1/M2 cases passed; the new authored fixture's raw-List `execute` input was an invalid positive oracle. M3 was not reached in that command.
-- Corrected local `make regression m3`: exit 0. All 13 authored cases matched their declared expectations, including the existing intentional uncaught-exception case; all 18 M3 cases passed. No official source/expectation or comparator was changed to obtain this result.
-- Final `make assess`: exit 0, 290.37 seconds. It refreshed inventory, runtime discovery, reference Vim9 suites, unit/conformance/selftest/differential/M1/M2/regression/M3 checks, strict `make progress-check` and `make progress-integration`. The latter rejected foreign suites, stale code, forged verdicts/messages and changed fixtures. Actual full output is saved in `reports/assess-run.log`.
-- Final `.deps/nvim-linux-x86_64/bin/nvim --headless -u NONE -l scripts/progress.lua --require-complete`: exit 1. Actual output and execution metadata are saved in `reports/completion-gate.log`.
-- Current evidence: `reports/discovery.json`, `reports/reference.json`, `reports/differential.json`, `reports/m12.json`, `reports/m3.json`, `reports/regression.json`, and `reports/progress.{json,tsv,md}`. Strict accounting has `problems: []`; reference evidence is current. No accounting input is stale at this checkpoint.
+- Initial `make progress-check`: exit 0 against the resumed evidence.
+- Initial comparator probe: exit 1 because it read absent `test.log` unconditionally. This was a harness defect; the existing runner convention treats absent error log as no logged errors only alongside successful exit, completion marker and execution identity. Correcting that read exposed the reference PASS versus candidate line-1 UNSUPPORTED gap; corrected baseline command exited 0.
+- Extended comparator smoke followed by unit/conformance: comparator smoke passed, combined command exit 2 at the new strict Vim9 declaration controls; conformance was not reached. Compact `var x=1` declarations bypassed the existing whitespace check. Routing declaration `=` through `Parser:white` fixed acceptance, preserving compact legacy let. No test status or error wording was repinned.
+- Targeted diagnostic after correction: exit 0; compact declarations in def/Vim9 contexts returned FAIL/E1004, identity suffix in Vim9 returned FAIL/E15.
+- `make unit conformance-unit`: exit 0.
+- `make m12 regression m3`: exit 0; 87 official-derived M1/M2, 13 authored regressions and 18 M3 cases retained their expectations. The intentional existing uncaught-exception regression remains an expected negative.
+- `make assess`: exit 0, 314.10 seconds, including inventory, discovery, reference suites, all selected tests, strict progress and progress integration. Output saved in `reports/assess-run.log`.
+- After restoring the user's initial manifest bytes, ran `scripts/m0.lua m3` without its generator, then `make progress-check progress-integration`, then the final dedicated comparator smoke: exit 0, 76.11 seconds. This refreshes M3's manifest fingerprint rather than leaving evidence stale. The full actual follow-up output, including the original-source/call and setter observations, is appended in `reports/assess-run.log`.
+- `cmp -s tests/m3/manifest.json <saved-initial-manifest>`: exit 0 before removing the temporary backup.
+- Final `scripts/progress.lua --require-complete`: exit 1, 5.88 seconds. Actual output and execution metadata are in `reports/completion-gate.log`.
+- Current `reports/progress.json` has `problems: []`, current reference evidence and `profile_complete: false`. Interpreter fingerprint is `f053868f64d696b61f28a087b2230fca4b6ded2cd08255770b72f0d0c0ad2066`; harness is `8aabc40909a2e47d3f7e77fa7ecc82b8956cfc3c8b9477ce311f11256903ab07`. No accounting input is stale at this checkpoint.
 
 | Accounting item | Previous checkpoint | Current evidence |
 | --- | ---: | ---: |
-| Matching evidence records | 115 | 120 |
-| Unique matching samples | 113 | 118 |
-| Official-derived sample matches | 86 | 90 |
-| Authored sample matches | 27 | 28 |
-| Sample-supported parent tests | 35 | 36 |
+| Matching records / unique matching samples | 120 / 118 | 120 / 118 |
+| Official-derived / authored sample matches | 90 / 28 | 90 / 28 |
 | Equivalent whole official tests | 0 | 0 |
-| Confirmed runtime test denominator | 7808 | 7808 |
-| Candidate NOT_RUN / BLOCKED | 7773 / 1 | 7772 / 1 |
-| Suites retaining denominator debt | 29 | 29 |
-| Lexical candidates in denominator debt | 428 | 428 |
+| Confirmed runtime denominator | 7808 | 7808 |
+| Candidate PARTIAL / NOT_RUN / BLOCKED | 36 / 7772 / 1 | 36 / 7772 / 1 |
+| Denominator-debt suites / lexical candidates | 29 / 428 | 29 / 428 |
 | Equivalent legacy inputs | 0 / 12 | 0 / 12 |
 | Reference Vim9 passes / skips | 1532 / 20 | 1532 / 20 |
 
-The five additional unique matches are four official-derived samples and one authored sample. Discovery and the denominator are unchanged; the newly sampled parent moves from NOT_RUN to PARTIAL, not EQUIVALENT. Duplicate evidence remains two records. Previous matches were retained; no corpus obligation was removed.
+No samples or parent credit were added merely because the original function now executes. It is not a current whole-adapter result, so the ledger's complete original-test obligation remains NOT_RUN. Discovery is unchanged, and no denominator obligation or prior match was removed. Qualitative legacy-language and namespaces-options feature entries now describe an IMPLEMENTED_SUBSET, not completeness.
 
-## Failed hypotheses and remaining gaps
+## Reviewed failures and remaining obligations
 
-- The first authored positive fixture used `execute 'echo' [1, 2] [3, 4]`. Reference failed with `Vim(execute):E730: Using a List as a String`; candidate incorrectly accepted it. Correcting the authored input to explicit `string()` conversions makes a valid positive parser regression, not a fix for implicit List conversion. The raw-List E730 discrepancy remains independent debt and is documented in README.
-- A draft smoke used `eval('xs[1]')` with a def-local variable. Reference `eval` cannot access that local and returned E121; the probe was corrected to a literal expression. No eval-scope fix or compatibility credit is claimed.
-- Separated-bracket declarations now reject, but candidate returns eager `UNSUPPORTED` (`Trailing statement token [`), not reference E488. With a preceding echo, reference script mode emits `before` before its runtime error; reference def mode fails during `defcompile` without that output. Candidate does not execute the preceding echo. Exact diagnostics, error classification/stage and preceding-output equivalence remain unresolved.
-- Call/member/method-specific whitespace and additional continuation behavior were not redesigned. The change covers bracket attachment, not all postfix spacing semantics.
-- Whole-test adapters remain unregistered, so whole equivalence is zero. Bounded sample `emitted_messages` does not discharge full message/history or UI obligations. Type checking, static name resolution, complete error stages/stack, editor/filesystem/process/UI observations, legacy adapters and GUI/Windows/macOS/optional-feature profiles remain debt.
-- Earlier environment failures remain relevant: host-native bootstrap lacked usable tinfo; native pinned executables are x86_64 and cannot run directly on arm64. Missing UTF-8 locale corrupts reference Unicode results. A minimal container without external Python/ps/unzip reduced discovery; the preserved image includes those helpers. Do not treat those failures as candidate successes or change the reference profile to avoid them.
+- Review found a false-credit path in the first whole-consumer draft: same-file Test_A observations could be relabeled as Test_B. Mandatory complete test identity in all three provenance objects and negative controls fixed it; follow-up review found no remaining introduced false-credit path. Saved true booleans, source-path equality and hashes alone are not accepted as execution evidence.
+- No all-nine reference recorder or compatible candidate inherited runner exists yet. Current API observations remain bounded assertions, exception, flat throwpoint and emitted messages; option state and the original body were additionally measured only by this smoke. Full messages/history, precise caught-error phases/stack, editor state, transient filesystem/process/internal timer/autocommand events and terminal UI remain unobserved as a complete original-runner comparison.
+- Inherited preparation is substantial even for this 14-line test: shell/environment/runtimepath/packpath/fake HOME, shared/check/terminal/view helper loading and visibility, timer/test-override/autocommand setup, buffers/options/cwd, function discovery/register effects, lifecycle cleanup, output/completion files and summary. Absent local hooks do not permit skipping those effects.
+- Unsupported legacy forms include function attributes (`abort`, `dict`, `range`, `closure`), default/type parameters, autoload definitions/other function scopes, scope dictionaries, legacy unlet/listing/destructuring, non-Number/Bool condition conversion and general grammar/builtin conversions. Only `isident`/`isi` options and the documented simple operations are implemented; other options, non-string assignment and advanced set forms remain unsupported.
+- Type inference/checking/conversion, static resolution, genuine defcompile and legacy error timing remain debt. The parser is eager. Previous separated-list negative E488 classification/stage/preceding-output mismatch and raw-List execute E730 conversion gap remain unresolved. Previous def-local eval probe was invalid on reference and was not credited as an eval-scope fix.
+- GUI/Windows/macOS/optional-feature profiles, legacy test*.in adapters, whole editor suites and denominator debt remain obligations. Native arm64 cannot directly run the pinned x86_64 binaries. Preserve UTF-8 and external discovery helper prerequisites; environment failures must not become compatibility successes.
 
-## Concrete resume actions
+## Concrete next actions
 
-First validate the saved evidence in the same runner:
+Validate saved evidence with the preserved runner:
 
 ```sh
 docker run --rm --platform linux/amd64 \
@@ -79,16 +79,14 @@ docker run --rm --platform linux/amd64 \
   make progress-check
 ```
 
-Next selected whole-test target: `upstream/vim/src/testdir/test_comparators.vim::Test_Comparators`. Read the complete original 14-line file; its original body is lines 3–11. It has no file-local helpers, source-time gates, SetUp or TearDown. It saves `&isident`, executes `set isident+=#`, asserts the compact legacy expression `1 is#1`, and restores the exact option in `finally`. This is a source-backed candidate selection, not an exercised whole-test comparison.
+Keep `test_comparators.vim::Test_Comparators` as the first whole-adapter target. Its real language/body blocker is now solved; do not switch back to repeatedly adding extracted success samples.
 
-1. Reproduce candidate sourcing and invocation of that unchanged complete file against the pinned original-runner reference. Establish preparation/source/body/cleanup stage boundaries before implementing an adapter.
-2. Implement shared legacy prerequisites rather than translating this fixture: double-quote comments, `function`/`endfunction`, compact `let` local creation, compact `is#` tokenization and legacy numeric comparison results. Add real option read/write and `set` behavior for the body, including restoration on failures. Existing Bool identity results must not be made equal to Number by weakening assertions.
-3. Account for inherited runner preparation and cleanup: `util/unix.vim` 1–13; `util/setup.vim` 1–49; `runtest.vim` 53–125, 252–345, 347–425 and 553–591. Runner setup/shared/check loading, environment/runtimepath/packpath, fake HOME, buffer/options/cwd preparation and cleanup are not optional merely because the test body is short. Either execute these semantics in candidate or implement a specified compatible runner; never host-source candidate Vimscript.
-4. Capture and compare all nine required channels, including authentic stage/stack, messages/history, option/editor state, filesystem, process events and UI. Absent local hooks must be genuinely absent; unchanged/no-event channels must be measured, not filled with constants or omitted. Keep runner effects distinguishable from body effects without discarding them.
-5. Register a whole adapter only after real execution/comparison and negative validation cover preparation, lifecycle and every required observable. Wire it into `assess`, strict progress and CI, then refresh evidence in a serialized run. Do not rename another fragment as a whole adapter.
-
-Alternate source-backed small target: `test_sha256.vim::Test_sha256` (whole file 1–35, body 6–33, eleven string/blob digest assertions). It additionally requires genuine source-time `CheckFeature cryptv` / `CheckFunction sha256` semantics from `util/check.vim` and its shared/term helper dependencies, plus byte-correct hashing. It is not just an isolated sha256 builtin task. Neither selected whole target has yet been exercised by a candidate whole adapter.
+1. Implement/select an executable pinned-reference phase recorder before claiming nine-channel results. Inspect `runtest.vim` 53–251, 252–461, 462–694 and `util/{unix,setup,shared,check,term_util,view_util}.vim`. Existing post-exit logs cannot recover every caught exception/stage/stack or transient effect. A preload timer/autocommand alone cannot guarantee snapshots of this short function and may be cleared by runner cleanup. A debugger-based observer is a proposal, not verified infrastructure; prove and account for its effects, and keep the reference binary/source pin unchanged.
+2. Implement a documented native Lua original-runner-compatible lifecycle, or genuinely execute the original runner/helper semantics. Use `Session:source` and `Session:call` without rewriting the official test. Preserve full preparation, actual function/hook visibility, option/editor state, fake HOME and output-file effects, timer/autocommand/cleanup and skip/error behavior. Do not supply no-op helper/override implementations or constant empty observations.
+3. Capture transient filesystem/process/editor events and actual terminal/UI data using working mechanisms in this environment. Determine syscall/PTY/debugger tool availability and permissions by commands rather than assuming a missing dependency. Final filesystem inventories and process exit status alone are insufficient; headless stdout is not UI proof.
+4. Produce real independent eight-phase raw journals for all nine channels using the documented whole-consumer schema; bind complete test ID, current implementation/helper/source hashes and provenance. Preserve raw values and explicitly define any necessary runner bookkeeping/nondeterminism treatment in the contract rather than normalize mismatches away.
+5. Prove negative controls for recorder/lifecycle channels, then register the real adapter and wire it into `assess`/CI. Recompute comparisons via the hardened consumer; never write successful result/check JSON by hand. Refresh all evidence and rerun the complete gate in a serialized run.
 
 ## Exit state
 
-`CONTINUE`. The parser implementation unit and current evidence are committed and verified. The complete-profile gate returned 1: zero equivalent whole tests, unrun candidate tests, legacy debt, unresolved denominator suites and additional profiles prevent `COMPLETE`. Continue with the selected original-runner-compatible whole-test obligation rather than repeatedly growing fragments alone.
+`CONTINUE`. The legacy source/body and fail-closed whole-consumer unit is committed and verified, but whole-adapter execution/recording remains unfinished. Complete-profile gate exit 1, zero whole equivalence and retained discovery/legacy/profile obligations prevent `COMPLETE`. The user's original manifest modification is preserved outside these commits.
