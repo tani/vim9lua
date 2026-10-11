@@ -1,0 +1,25 @@
+local root=vim.fn.fnamemodify(debug.getinfo(1,'S').source:sub(2),':p:h:h')
+vim.opt.runtimepath:prepend(root)
+local api=require('vim9')
+local function main()
+ for _,pair in ipairs({{"'left'","'right'"},{'true','false'},{'9007199254740992','9007199254740993'},{'1','1.1'}}) do
+  local result=api.run('vim9script\nassert_equal('..pair[1]..', '..pair[2]..')\n')
+  assert(result.status=='FAIL' and #result.observation.assertions==1,'Assertion must distinguish '..pair[1]..' from '..pair[2])
+ end
+ local tree=api.parse('vim9script\nvar x: list<dict<any>> = []\ndef F(a: number, b: number = 2): number\n return a + b\nenddef\n')
+ assert(tree.body[2].annotation=='list<dict<any>>')
+ assert(tree.body[3].params[1].annotation=='number')
+ assert(tree.body[3].annotation=='number')
+ local untyped=api.run('vim9script\nvar x: number = "hello"\nassert_equal("hello", x)\n')
+ assert(untyped.status=='PASS','Type annotations must be erased during evaluation')
+ local fuel=api.run('vim9script\ntry\n while true\n endwhile\nfinally\n echo "cleanup"\nendtry\n',{step_limit=30})
+ assert(fuel.status=='UNSUPPORTED','Fuel exhaustion must not become a successful catch')
+ local first=api.run('vim9script\ng:isolated = 1\n')
+ local second=api.run('vim9script\nassert_equal(0, exists("g:isolated"))\n')
+ assert(first.status=='PASS' and second.status=='PASS','Independent runs must not share globals')
+ local unavailable=api.run('vim9script\nimport "module.vim" as mod\n')
+ assert(unavailable.status=='UNSUPPORTED','Unimplemented modules must not masquerade as success')
+ print('AST annotations, erasure, fuel, isolated runs and unsupported boundary checks passed')
+end
+local ok,err=xpcall(main,debug.traceback)
+if not ok then io.stderr:write(err..'\n');os.exit(1) end

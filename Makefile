@@ -14,3 +14,15 @@ selftest:
 	$(NVIM) --headless -u NONE -l scripts/m0.lua selftest
 m0:
 	$(NVIM) --headless -u NONE -l scripts/m0.lua all
+.PHONY: m12 m12-fixtures regression-fixtures regression unit test
+m12-fixtures:
+	$(NVIM) --headless -u NONE -l scripts/fixtures.lua
+regression-fixtures:
+	$(NVIM) --headless -u NONE -l scripts/regression-fixtures.lua
+m12: m12-fixtures
+	$(NVIM) --headless -u NONE -l scripts/m0.lua m12
+regression: regression-fixtures
+	$(NVIM) --headless -u NONE -l scripts/m0.lua regression
+unit:
+	$(NVIM) --headless -u NONE -l tests/unit.lua
+test: unit selftest differential m12 regression

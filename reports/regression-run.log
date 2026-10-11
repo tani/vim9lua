@@ -1,0 +1,13 @@
+.deps/nvim-linux-x86_64/bin/nvim --headless -u NONE -l scripts/regression-fixtures.lua
+Indexed 10 semantic regression fixtures
+.deps/nvim-linux-x86_64/bin/nvim --headless -u NONE -l scripts/m0.lua regression
+assertion-state: reference=PASS, emulator=PASS
+catch-patterns: reference=PASS, emulator=PASS
+containers-and-scope: reference=PASS, emulator=PASS
+evaluation-order: reference=PASS, emulator=PASS
+expressions: reference=PASS, emulator=PASS
+finally-control: reference=PASS, emulator=PASS
+finally-throw-return: reference=FAIL, emulator=PASS
+integer64: reference=PASS, emulator=PASS
+lambda-escaping: reference=PASS, emulator=PASS
+recursion-default-varargs: reference=PASS, emulator=PASS

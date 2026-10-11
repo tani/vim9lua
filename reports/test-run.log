@@ -1,0 +1,87 @@
+.deps/nvim-linux-x86_64/bin/nvim --headless -u NONE -l tests/unit.lua
+AST annotations, erasure, fuel, isolated runs and unsupported boundary checks passed
+.deps/nvim-linux-x86_64/bin/nvim --headless -u NONE -l scripts/m0.lua selftest
+Harness classification and LPeg checks passed
+.deps/nvim-linux-x86_64/bin/nvim --headless -u NONE -l scripts/m0.lua differential
+Test_expr9_number/script: reference=PASS, emulator=PASS
+Test_expr9_number/def: reference=PASS, emulator=PASS
+.deps/nvim-linux-x86_64/bin/nvim --headless -u NONE -l scripts/fixtures.lua
+Extracted 64 official M1/M2 cases
+.deps/nvim-linux-x86_64/bin/nvim --headless -u NONE -l scripts/m0.lua m12
+Test_assignment_default/direct: reference=PASS, emulator=PASS
+Test_break_in_try_in_for/1/script: reference=PASS, emulator=PASS
+Test_closure_append_get/direct: reference=PASS, emulator=PASS
+Test_closure_ref_after_return/direct: reference=PASS, emulator=PASS
+Test_closure_simple/direct: reference=PASS, emulator=PASS
+Test_closure_two_indirect_refs/direct: reference=PASS, emulator=PASS
+Test_closure_two_refs/direct: reference=PASS, emulator=PASS
+Test_closure_using_argument/1/script: reference=PASS, emulator=PASS
+Test_continue_in_try_in_while/direct: reference=PASS, emulator=PASS
+Test_double_nested_lambda/1/script: reference=PASS, emulator=PASS
+Test_expr1_falsy/1/def: reference=PASS, emulator=PASS
+Test_expr1_falsy/1/script: reference=PASS, emulator=PASS
+Test_expr2/1/def: reference=PASS, emulator=PASS
+Test_expr2/1/script: reference=PASS, emulator=PASS
+Test_expr2_vimscript/1/def: reference=PASS, emulator=PASS
+Test_expr2_vimscript/1/script: reference=PASS, emulator=PASS
+Test_expr2_vimscript/2/def: reference=PASS, emulator=PASS
+Test_expr2_vimscript/2/script: reference=PASS, emulator=PASS
+Test_expr2_vimscript/3/def: reference=PASS, emulator=PASS
+Test_expr2_vimscript/3/script: reference=PASS, emulator=PASS
+Test_expr2_vimscript/4/def: reference=PASS, emulator=PASS
+Test_expr2_vimscript/4/script: reference=PASS, emulator=PASS
+Test_expr3/1/def: reference=PASS, emulator=PASS
+Test_expr3/1/script: reference=PASS, emulator=PASS
+Test_expr3_vimscript/1/def: reference=PASS, emulator=PASS
+Test_expr3_vimscript/1/script: reference=PASS, emulator=PASS
+Test_expr3_vimscript/2/def: reference=PASS, emulator=PASS
+Test_expr3_vimscript/2/script: reference=PASS, emulator=PASS
+Test_expr3_vimscript/3/def: reference=PASS, emulator=PASS
+Test_expr3_vimscript/3/script: reference=PASS, emulator=PASS
+Test_expr3_vimscript/4/def: reference=PASS, emulator=PASS
+Test_expr3_vimscript/4/script: reference=PASS, emulator=PASS
+Test_expr7/1/def: reference=PASS, emulator=PASS
+Test_expr7/1/script: reference=PASS, emulator=PASS
+Test_expr9_blob/1/def: reference=PASS, emulator=PASS
+Test_expr9_blob/1/script: reference=PASS, emulator=PASS
+Test_expr9_number/1/def: reference=PASS, emulator=PASS
+Test_expr9_number/1/script: reference=PASS, emulator=PASS
+Test_expr9_string/1/def: reference=PASS, emulator=PASS
+Test_expr9_string/1/script: reference=PASS, emulator=PASS
+Test_expr9_string/2/def: reference=PASS, emulator=PASS
+Test_expr9_string/2/script: reference=PASS, emulator=PASS
+Test_fixed_size_list/direct: reference=PASS, emulator=PASS
+Test_for_loop/1/def: reference=PASS, emulator=PASS
+Test_for_loop/1/script: reference=PASS, emulator=PASS
+Test_for_loop_with_closure/1/def: reference=PASS, emulator=PASS
+Test_for_loop_with_closure/1/script: reference=PASS, emulator=PASS
+Test_for_loop_with_closure/2/def: reference=PASS, emulator=PASS
+Test_for_loop_with_closure/2/script: reference=PASS, emulator=PASS
+Test_for_loop_with_try_continue/1/def: reference=PASS, emulator=PASS
+Test_for_loop_with_try_continue/1/script: reference=PASS, emulator=PASS
+Test_if_else_func_using_var/1/script: reference=PASS, emulator=PASS
+Test_if_elseif_else/direct: reference=PASS, emulator=PASS
+Test_lambda_block_variable/1/script: reference=PASS, emulator=PASS
+Test_lambda_block_variable/2/script: reference=PASS, emulator=PASS
+Test_lambda_block_variable/3/script: reference=PASS, emulator=PASS
+Test_nested_closure/direct: reference=PASS, emulator=PASS
+Test_nested_lambda/1/script: reference=PASS, emulator=PASS
+Test_script_var_default/1/script: reference=PASS, emulator=PASS
+Test_try_ends_in_return/1/script: reference=PASS, emulator=PASS
+Test_try_ends_in_return/2/script: reference=PASS, emulator=PASS
+Test_try_var_decl/1/script: reference=PASS, emulator=PASS
+Test_while_loop/direct: reference=PASS, emulator=PASS
+Test_while_loop_in_script/1/script: reference=PASS, emulator=PASS
+.deps/nvim-linux-x86_64/bin/nvim --headless -u NONE -l scripts/regression-fixtures.lua
+Indexed 10 semantic regression fixtures
+.deps/nvim-linux-x86_64/bin/nvim --headless -u NONE -l scripts/m0.lua regression
+assertion-state: reference=PASS, emulator=PASS
+catch-patterns: reference=PASS, emulator=PASS
+containers-and-scope: reference=PASS, emulator=PASS
+evaluation-order: reference=PASS, emulator=PASS
+expressions: reference=PASS, emulator=PASS
+finally-control: reference=PASS, emulator=PASS
+finally-throw-return: reference=FAIL, emulator=PASS
+integer64: reference=PASS, emulator=PASS
+lambda-escaping: reference=PASS, emulator=PASS
+recursion-default-varargs: reference=PASS, emulator=PASS

@@ -154,9 +154,9 @@ local function classify(reference_result,candidate)
   if candidate.status=='PASS' and vim.deep_equal(reference_result.observation,candidate.observation) then return 'PASS' end
   return 'FAIL'
 end
-local function differential()
+local function differential(manifest,report)
   local results={}
-  for _,f in ipairs(load(path('tests/fixtures/manifest.json'))) do
+  for _,f in ipairs(load(path(manifest or 'tests/fixtures/manifest.json'))) do
     local tmp=vim.fn.tempname(); vim.fn.mkdir(tmp,'p')
     local source=read(path(f.file))
     assert(vim.fn.sha256(source)==f.sha256,'Fixture content differs from manifest')
@@ -183,12 +183,19 @@ local function differential()
       local ok,data=pcall(load,candidate_output)
       if ok then candidate=data end
     end
-    results[#results+1]={id=f.id,fixture=f,reference=ref,candidate=candidate,status=classify(ref,candidate)}
+    local status=classify(ref,candidate)
+    if f.expected_exception then
+      if not ref.observation or ref.observation.exception~=f.expected_exception or #ref.observation.assertions~=0 then status='HARNESS_ERROR'
+      elseif candidate.status=='UNSUPPORTED' then status='UNSUPPORTED'
+      elseif candidate.status=='FAIL' and candidate.observation.exception==f.expected_exception and #candidate.observation.assertions==0 then status='PASS'
+      else status='FAIL' end
+    end
+    results[#results+1]={id=f.id,fixture=f,reference=ref,candidate=candidate,status=status}
     vim.fn.delete(tmp,'rf')
   end
-  json(path('reports/differential.json'),{scope='M0 number fixtures only; not whole-suite conformance',results=results})
+  json(path(report or 'reports/differential.json'),{scope=manifest and (manifest:match('regression') and 'Authored semantic regressions; not upstream tests' or 'Selected official M1/M2 cases; not whole-suite conformance') or 'Number fixtures only; not whole-suite conformance',results=results})
   for _,r in ipairs(results) do print(r.id..': reference='..r.reference.status..', emulator='..r.status) end
-  for _,r in ipairs(results) do if r.status=='HARNESS_ERROR' or r.status=='FAIL' then return false end end
+  for _,r in ipairs(results) do if r.status=='HARNESS_ERROR' or r.status=='FAIL' or (manifest and r.status~='PASS') then return false end end
   return true
 end
 local function selftest()
@@ -202,7 +209,7 @@ local function selftest()
   assert(lpeg.match(P('vim9script') * -P(1),'vim9script'))
   print('Harness classification and LPeg checks passed')
 end
-local commands={lock=lock,inventory=inventory,fixture=fixture,reference=reference,differential=differential,selftest=selftest}
+local commands={regression=function() return differential('tests/regression/manifest.json','reports/regression.json') end,m12=function() return differential('tests/m12/manifest.json','reports/m12.json') end,lock=lock,inventory=inventory,fixture=fixture,reference=reference,differential=differential,selftest=selftest}
 local function main()
 verify()
 local command=arg[1] or 'help'
