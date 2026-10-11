@@ -1,0 +1,16 @@
+.deps/nvim-linux-x86_64/bin/nvim --headless -u NONE -l scripts/m0.lua all
+Sources and host locked
+Inventory: 265 files, 5434 declaration candidates, 3058 helper calls
+Extracted official number fixture in script and def contexts
+Harness classification and LPeg checks passed
+test_vim9_assign.vim: PASS
+test_vim9_builtin.vim: PASS
+test_vim9_cmd.vim: PASS
+test_vim9_disassemble.vim: PASS
+test_vim9_expr.vim: PASS
+test_vim9_fails.vim: PASS
+test_vim9_func.vim: PASS
+test_vim9_import.vim: PASS
+test_vim9_script.vim: PASS
+Test_expr9_number/script: reference=PASS, emulator=UNSUPPORTED
+Test_expr9_number/def: reference=PASS, emulator=UNSUPPORTED
