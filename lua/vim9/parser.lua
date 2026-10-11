@@ -114,7 +114,8 @@ function Parser:expr(min)
    if prec[t.text] or t.text=='?' or t.text=='??' or t.text=='->' then self:nl() else break end
   end
   if t.text=='(' then x=node('call',t,{callee=x,args=self:args()})
-  elseif t.text=='[' then
+  -- A separated '[' starts another expression, not a postfix subscript.
+  elseif t.text=='[' and t.start==self.tokens[self.pos-1].finish then
    self:take();self:nl();local first,last,slice
    if not self:is(':') and not self:is(']') then first=self:expr() end
    if self:accept(':') then slice=true;self:nl();if not self:is(']') then last=self:expr() end end

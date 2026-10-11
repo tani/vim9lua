@@ -67,8 +67,8 @@ Implemented and tested:
   `echo`, `echoerr`, `execute`, `unlet`, `call`, `eval` and `defcompile` syntax.
   `defcompile` is a no-op while static validation remains deferred.
 
-**Current validation: 83 official-derived cases pass differential testing,
-plus 12 authored semantic regression cases.** The number-literal smoke test
+**Current validation: 87 official-derived M1/M2 cases pass differential testing,
+plus 13 authored semantic regression cases.** The number-literal smoke test
 also passes in script and def contexts. These are selected cases, not whole-suite
 Vim conformance, and not a claim that all tests within their parent functions pass.
 One regression intentionally throws: passing means both implementations produce
@@ -173,6 +173,15 @@ runs; future patches require an explicit pin/fixture update.
 Static type checks, type-directed conversions, compile-time name resolution,
 exact diagnostic text/throwpoint stacks and validation timing remain deferred.
 The parser is eager, so parsing/unsupported diagnostics can precede execution.
+Bracket postfix syntax requires `[` to start at the preceding token's exclusive
+end. Spaces or tabs before `[` instead start a new list argument in
+multi-expression commands. Whitespace, comments and newlines inside brackets,
+and attached indices, slices and chains, remain supported; call-, member- and
+method-specific whitespace rules are unchanged. Separated brackets in
+declarations are rejected as `UNSUPPORTED`, not as equivalent Vim diagnostics:
+pinned Vim's E488 text, runtime-versus-`defcompile` timing and preceding output
+remain debt. Direct List conversion by `execute` also remains an independent
+E730 gap; adjacent-list argument samples do not establish that conversion.
 Classes, interfaces, enums, tuples, generic functions and type aliases introduced
 in later Vim 9 releases remain outside the implemented subset.
 General legacy Vimscript, heredoc execution, editor state/commands, options,

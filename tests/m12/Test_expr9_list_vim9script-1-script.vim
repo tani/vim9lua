@@ -1,0 +1,25 @@
+vim9script
+g:anint = 10
+g:thefour = 4
+g:blob_empty = 0z
+g:blob_one = 0z01
+g:blob_long = 0z0102.0304
+g:string_empty = ''
+g:string_short = 'x'
+g:string_long = 'abcdefghijklm'
+g:string_special = "ab\ncd\ref\ekk"
+var l = [
+		11,
+		22,
+		]
+assert_equal([11, 22], l)
+
+echo [1,
+	    2] [3,
+		    4]
+
+echo [1, # comment
+      # comment
+	    2] [3,
+      # comment
+		    4]

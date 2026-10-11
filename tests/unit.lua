@@ -22,6 +22,60 @@ local function main()
  local temp=vim.fn.tempname();vim.fn.mkdir(temp,'p')
  local function file(name,text) vim.fn.writefile(vim.split(text,'\n',{plain=true}),temp..'/'..name,'b') end
  local function pass(result) assert(result.status=='PASS',vim.inspect(result)) end
+ local bracket_body=[=[
+echo 17 true [1, 2]
+echo [8, 9] [1]
+echo [1, 2] [3, 4]
+echo [1, 2]	[3, 4]
+echo [8, 9]->Keep() [1]
+echo [
+ 1,
+ 2
+] [
+ 3,
+ 4
+]
+var values = [8, 9, 10]
+assert_equal(9, values[1])
+assert_equal([8, 9], values[0 : 1])
+assert_equal(9, values[0 : 1][1])
+assert_equal(9, [[7, 8], [9, 10]][1][0])
+assert_equal(9, ([8, 9])[1])
+assert_equal(9, Keep([8, 9])[1])
+var holder = {values: [8, 9]}
+assert_equal(9, holder.values[1])
+assert_equal(9, [
+ 8,
+ 9
+][
+ # Bracket interiors may contain comments and newlines.
+ 1
+])
+assert_equal([8, 9], values[
+ 0 :
+ 1
+])
+assert_equal(9, [8, 9]
+ ->Keep()[1])
+assert_equal(9, eval('[8, 9][1]'))
+]=]
+ local bracket_header='vim9script\ndef Keep(values: list<number>): list<number>\n return values\nenddef\n'
+ local bracket_stream='\n17 true [1, 2]\n[8, 9] [1]\n[1, 2] [3, 4]\n[1, 2] [3, 4]\n[8, 9] [1]\n[1, 2] [3, 4]'
+ for _,body in ipairs({bracket_body,'def CheckBracketArguments()\n'..bracket_body..'enddef\nCheckBracketArguments()\n'}) do
+  local result=api.run(bracket_header..body)
+  pass(result)
+  assert(result.observation.emitted_messages==bracket_stream,'Separated lists must remain echo arguments in scripts and defs')
+ end
+ local parser=require('vim9.parser')
+ for _,separator in ipairs({' ','\t'}) do
+  local expression='[8, 9]'..separator..'[1]'
+  local parsed=pcall(parser.expression,expression)
+  assert(not parsed,'Expression parsing must reject a separated subscript')
+  for _,body in ipairs({'var value = '..expression..'\n','def RejectSeparatedSubscript()\n var value = '..expression..'\nenddef\n'}) do
+   local declared=pcall(api.parse,'vim9script\n'..body)
+   assert(not declared,'Variable declarations must reject a separated subscript in scripts and defs')
+  end
+ end
  local session=api.new()
  file('counter.vim',"vim9script\nexport var count = 1\nexport def Inc(): number\n count += 1\n return count\nenddef\n")
  file('entry.vim',"vim9script\nimport './counter.vim' as c\ng:Result = c.Inc\ng:value = c.Inc()\n")

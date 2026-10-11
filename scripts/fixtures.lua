@@ -26,7 +26,7 @@ local function save(id,text,metadata)
  fixtures[#fixtures+1]=metadata
 end
 local selections={
- ['test_vim9_expr.vim']={'Test_expr9_number','Test_expr9_blob','Test_expr9_string','Test_expr7','Test_expr1_falsy','Test_expr2','Test_expr3','Test_expr2_vimscript','Test_expr3_vimscript'},
+ ['test_vim9_expr.vim']={'Test_expr9_number','Test_expr9_blob','Test_expr9_string','Test_expr7','Test_expr1_falsy','Test_expr2','Test_expr3','Test_expr2_vimscript','Test_expr3_vimscript','Test_expr9_list_vim9script'},
  ['test_vim9_assign.vim']={'Test_script_var_default'},
  ['test_vim9_script.vim']={'Test_for_loop','Test_for_loop_with_closure','Test_try_var_decl','Test_try_ends_in_return',
    'Test_break_in_try_in_for','Test_for_loop_with_try_continue','Test_while_loop_in_script','Test_if_else_func_using_var'},
@@ -86,6 +86,8 @@ for file,names in pairs(selections) do
         break
        end
       end
+     elseif name=='Test_expr9_list_vim9script' then
+      excluded={start=2657,finish=2697,reason='Negative helper diagnostics remain parent-test debt; success heredoc samples only, not whole-test coverage'}
      end
      local text=table.concat(body,'\n')..'\n'
      local modes=helper=='CheckScriptSuccess' and {'script'} or helper=='CheckDefSuccess' and {'def'} or {'script','def'}
@@ -100,7 +102,8 @@ for file,names in pairs(selections) do
       save(name..'/'..ordinal..'/'..mode,wrapped,{source_file='upstream/vim/src/testdir/'..file,
        source_test=name,source_start=start,source_end=start+#raw-1,excluded_range=excluded,helper=helper,mode=mode,original_heredoc=raw,
        dependencies=(name=='Test_expr2' or name=='Test_expr3') and {{name='g:Record',start=record_first,finish=record_last}} or {},
-       setup= file=='test_vim9_expr.vim' and setup or {},normalization='Vim << trim plus helper context wrapper; constant legacy let setup'})
+       setup= file=='test_vim9_expr.vim' and setup or {},normalization='Vim << trim plus helper context wrapper; constant legacy let setup'..
+        (name=='Test_expr9_list_vim9script' and '; sample-scoped preparation/lifecycle only, excluding the parent negative tail' or '')})
      end
     end
     i=finish

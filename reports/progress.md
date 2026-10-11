@@ -8,8 +8,8 @@ This is a fixed-corpus, fixed-profile evidence ledger. No global compatibility p
 | Standalone modern suites / helper inputs | 314 / 4 |
 | Confirmed runtime Test_ entry points | 7808 |
 | Whole tests with all required observables equivalent | 0 |
-| Parents with matching sample evidence | 35 |
-| Unique matching samples (official-derived / authored) | 113 (86 / 27) |
+| Parents with matching sample evidence | 36 |
+| Unique matching samples (official-derived / authored) | 118 (90 / 28) |
 | Duplicate sample records | 2 |
 | Suites with unresolved runtime denominator | 29 |
 | Lexical candidates in those unresolved suites | 428 |

@@ -6678,7 +6678,7 @@ upstream/vim/src/testdir/test_vim9_expr.vim	Test_expr9_lambda_vim9script	DISCOVE
 upstream/vim/src/testdir/test_vim9_expr.vim	Test_expr9_legacy_script	DISCOVERED	PASS	NOT_RUN	0
 upstream/vim/src/testdir/test_vim9_expr.vim	Test_expr9_list	DISCOVERED	PASS	NOT_RUN	0
 upstream/vim/src/testdir/test_vim9_expr.vim	Test_expr9_list_subscript	DISCOVERED	PASS	NOT_RUN	0
-upstream/vim/src/testdir/test_vim9_expr.vim	Test_expr9_list_vim9script	DISCOVERED	PASS	NOT_RUN	0
+upstream/vim/src/testdir/test_vim9_expr.vim	Test_expr9_list_vim9script	DISCOVERED	PASS	PARTIAL	4
 upstream/vim/src/testdir/test_vim9_expr.vim	Test_expr9_method_call	DISCOVERED	PASS	NOT_RUN	0
 upstream/vim/src/testdir/test_vim9_expr.vim	Test_expr9_method_call_import	DISCOVERED	PASS	NOT_RUN	0
 upstream/vim/src/testdir/test_vim9_expr.vim	Test_expr9_method_call_linebreak	DISCOVERED	PASS	NOT_RUN	0
