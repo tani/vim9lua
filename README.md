@@ -115,6 +115,11 @@ promote a parent Test_ function to complete equivalence. No global compatibility
 percentage is claimed. Full observables, profiles and adapter obligations are
 specified in [conformance/README.md](conformance/README.md).
 
+[LOOP.md](LOOP.md) contains the implementation continuation prompt: select a
+conformance gap, reproduce it, implement and verify it, refresh evidence, save a
+checkpoint, and repeat until all completion obligations are satisfied. It also
+defines resumable status output for an external loop runner.
+
 ## Reproduce
 
 On Linux x86_64 with Bash, Git, curl, tar, GCC, make, sha256sum and libtinfo:
