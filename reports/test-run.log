@@ -1,12 +1,14 @@
 .deps/nvim-linux-x86_64/bin/nvim --headless -u NONE -l tests/unit.lua
-AST annotations, erasure, fuel, isolated runs and unsupported boundary checks passed
+Persistent session, module closures, source errors, AST annotations, erasure, fuel, isolated runs and unsupported boundary checks passed
+.deps/nvim-linux-x86_64/bin/nvim --headless -u NONE -l tests/conformance.lua
+Conformance verdict, stale evidence, scope, observable and denominator accounting checks passed
 .deps/nvim-linux-x86_64/bin/nvim --headless -u NONE -l scripts/m0.lua selftest
 Harness classification and LPeg checks passed
 .deps/nvim-linux-x86_64/bin/nvim --headless -u NONE -l scripts/m0.lua differential
 Test_expr9_number/script: reference=PASS, emulator=PASS
 Test_expr9_number/def: reference=PASS, emulator=PASS
 .deps/nvim-linux-x86_64/bin/nvim --headless -u NONE -l scripts/fixtures.lua
-Extracted 64 official M1/M2 cases
+Extracted 83 official M1/M2 cases
 .deps/nvim-linux-x86_64/bin/nvim --headless -u NONE -l scripts/m0.lua m12
 Test_assignment_default/direct: reference=PASS, emulator=PASS
 Test_break_in_try_in_for/1/script: reference=PASS, emulator=PASS
@@ -16,12 +18,15 @@ Test_closure_simple/direct: reference=PASS, emulator=PASS
 Test_closure_two_indirect_refs/direct: reference=PASS, emulator=PASS
 Test_closure_two_refs/direct: reference=PASS, emulator=PASS
 Test_closure_using_argument/1/script: reference=PASS, emulator=PASS
+Test_closure_using_argument/2/script: reference=PASS, emulator=PASS
 Test_continue_in_try_in_while/direct: reference=PASS, emulator=PASS
 Test_double_nested_lambda/1/script: reference=PASS, emulator=PASS
 Test_expr1_falsy/1/def: reference=PASS, emulator=PASS
 Test_expr1_falsy/1/script: reference=PASS, emulator=PASS
 Test_expr2/1/def: reference=PASS, emulator=PASS
 Test_expr2/1/script: reference=PASS, emulator=PASS
+Test_expr2/2/def: reference=PASS, emulator=PASS
+Test_expr2/2/script: reference=PASS, emulator=PASS
 Test_expr2_vimscript/1/def: reference=PASS, emulator=PASS
 Test_expr2_vimscript/1/script: reference=PASS, emulator=PASS
 Test_expr2_vimscript/2/def: reference=PASS, emulator=PASS
@@ -55,8 +60,24 @@ Test_for_loop/1/def: reference=PASS, emulator=PASS
 Test_for_loop/1/script: reference=PASS, emulator=PASS
 Test_for_loop_with_closure/1/def: reference=PASS, emulator=PASS
 Test_for_loop_with_closure/1/script: reference=PASS, emulator=PASS
+Test_for_loop_with_closure/10/def: reference=PASS, emulator=PASS
+Test_for_loop_with_closure/10/script: reference=PASS, emulator=PASS
 Test_for_loop_with_closure/2/def: reference=PASS, emulator=PASS
 Test_for_loop_with_closure/2/script: reference=PASS, emulator=PASS
+Test_for_loop_with_closure/3/def: reference=PASS, emulator=PASS
+Test_for_loop_with_closure/3/script: reference=PASS, emulator=PASS
+Test_for_loop_with_closure/4/def: reference=PASS, emulator=PASS
+Test_for_loop_with_closure/4/script: reference=PASS, emulator=PASS
+Test_for_loop_with_closure/5/def: reference=PASS, emulator=PASS
+Test_for_loop_with_closure/5/script: reference=PASS, emulator=PASS
+Test_for_loop_with_closure/6/def: reference=PASS, emulator=PASS
+Test_for_loop_with_closure/6/script: reference=PASS, emulator=PASS
+Test_for_loop_with_closure/7/def: reference=PASS, emulator=PASS
+Test_for_loop_with_closure/7/script: reference=PASS, emulator=PASS
+Test_for_loop_with_closure/8/def: reference=PASS, emulator=PASS
+Test_for_loop_with_closure/8/script: reference=PASS, emulator=PASS
+Test_for_loop_with_closure/9/def: reference=PASS, emulator=PASS
+Test_for_loop_with_closure/9/script: reference=PASS, emulator=PASS
 Test_for_loop_with_try_continue/1/def: reference=PASS, emulator=PASS
 Test_for_loop_with_try_continue/1/script: reference=PASS, emulator=PASS
 Test_if_else_func_using_var/1/script: reference=PASS, emulator=PASS
@@ -73,7 +94,7 @@ Test_try_var_decl/1/script: reference=PASS, emulator=PASS
 Test_while_loop/direct: reference=PASS, emulator=PASS
 Test_while_loop_in_script/1/script: reference=PASS, emulator=PASS
 .deps/nvim-linux-x86_64/bin/nvim --headless -u NONE -l scripts/regression-fixtures.lua
-Indexed 10 semantic regression fixtures
+Indexed 11 semantic regression fixtures
 .deps/nvim-linux-x86_64/bin/nvim --headless -u NONE -l scripts/m0.lua regression
 assertion-state: reference=PASS, emulator=PASS
 catch-patterns: reference=PASS, emulator=PASS
@@ -84,4 +105,26 @@ finally-control: reference=PASS, emulator=PASS
 finally-throw-return: reference=FAIL, emulator=PASS
 integer64: reference=PASS, emulator=PASS
 lambda-escaping: reference=PASS, emulator=PASS
+latest-vim9: reference=PASS, emulator=PASS
 recursion-default-varargs: reference=PASS, emulator=PASS
+.deps/nvim-linux-x86_64/bin/nvim --headless -u NONE -l scripts/m3-fixtures.lua
+Generated 18 multi-file M3 cases
+.deps/nvim-linux-x86_64/bin/nvim --headless -u NONE -l scripts/m0.lua m3
+official-import-export: reference=PASS, emulator=PASS
+official-import-exists: reference=PASS, emulator=PASS
+official-noclear: reference=PASS, emulator=PASS
+cache-paths: reference=PASS, emulator=PASS
+private-and-readonly: reference=PASS, emulator=PASS
+lazy-autoload: reference=PASS, emulator=PASS
+source-reload: reference=PASS, emulator=PASS
+default-alias: reference=PASS, emulator=PASS
+duplicate-import: reference=PASS, emulator=PASS
+cycle: reference=PASS, emulator=PASS
+finish: reference=PASS, emulator=PASS
+function-import: reference=PASS, emulator=PASS
+function-source: reference=PASS, emulator=PASS
+function-relative-import: reference=PASS, emulator=PASS
+absolute-import: reference=PASS, emulator=PASS
+runtimepath-import: reference=PASS, emulator=PASS
+invalid-imports: reference=PASS, emulator=PASS
+reload-clears-import: reference=PASS, emulator=PASS

@@ -1,0 +1,2 @@
+.deps/nvim-linux-x86_64/bin/nvim --headless -u NONE -l tests/progress-integration.lua
+Strict progress rejects foreign suite results, stale code, forged verdicts and changed fixture content

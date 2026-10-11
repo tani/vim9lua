@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "note": "Qualitative obligations, not percentage weights or proof of completeness. Each category needs full tests and observable coverage before it can be marked complete.",
+  "features": [
+    {"id":"expressions-values","status":"IMPLEMENTED_SUBSET","suites":["test_vim9_expr.vim","test_blob.vim","test_listdict.vim"],"remaining":"All operators, value/container edge cases, computed keys, interpolation and heredocs"},
+    {"id":"functions-control","status":"IMPLEMENTED_SUBSET","suites":["test_vim9_func.vim","test_vim9_script.vim"],"remaining":"All signatures/partials, variable operations and compiler-sensitive scope rules"},
+    {"id":"types-compilation","status":"DEFERRED","suites":["test_vim9_assign.vim","test_vim9_disassemble.vim","test_vim9_fails.vim"],"remaining":"Type inference/checking/conversion, static name resolution, defcompile and error stage"},
+    {"id":"objects-modern-types","status":"NOT_IMPLEMENTED","suites":["test_vim9_class.vim","test_vim9_interface.vim","test_vim9_enum.vim","test_vim9_generics.vim","test_vim9_typealias.vim"],"remaining":"Classes, interfaces, enums, tuples, generics and aliases"},
+    {"id":"exceptions-diagnostics","status":"IMPLEMENTED_SUBSET","suites":["test_vim9_script.vim","test_vimscript.vim","test_assert.vim"],"remaining":"Exact errors, propagation, stack/throwpoint, assert_fails and validation timing"},
+    {"id":"modules-source","status":"IMPLEMENTED_SUBSET","suites":["test_vim9_import.vim"],"remaining":"Legacy autoload namespace, script IDs, source expansion and compilation/reload validation"},
+    {"id":"legacy-language","status":"NOT_IMPLEMENTED","suites":["test_vimscript.vim","test_functions.vim"],"remaining":"General legacy Vimscript grammar, functions and scope semantics"},
+    {"id":"builtins","status":"IMPLEMENTED_SUBSET","suites":["test_vim9_builtin.vim","test_functions.vim"],"remaining":"Full builtin library including every overload and error case"},
+    {"id":"namespaces-options","status":"NOT_IMPLEMENTED","suites":["test_options.vim","test_vim9_expr.vim"],"remaining":"Editor namespaces, special variables, options, environment and registers"},
+    {"id":"editor-state","status":"NOT_IMPLEMENTED","suites":["test_buffer.vim","test_window_cmd.vim","test_tabpage.vim"],"remaining":"Buffers, windows, tabs, cursor, editing, undo, search and persistent state"},
+    {"id":"ex-mappings-events","status":"NOT_IMPLEMENTED","suites":["test_cmdline.vim","test_mapping.vim","test_autocmd.vim"],"remaining":"Ex commands, command modifiers, user commands, mappings and autocmds"},
+    {"id":"filesystem-process","status":"NOT_IMPLEMENTED","suites":["test_writefile.vim","test_readfile.vim","test_channel.vim","test_timers.vim","test_terminal.vim"],"remaining":"General filesystem I/O, jobs, channels, timers and terminal"},
+    {"id":"ui-platform-optional","status":"NOT_IMPLEMENTED","suites":["test_gui.vim","test_clipboard.vim","test_vim9_python3.vim"],"remaining":"UI, GUI, platform behavior and optional external-language integration"}
+  ]
+}

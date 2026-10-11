@@ -100,6 +100,21 @@ upstream line ranges and hashes for the official-derived cases and labels the
 separately authored cases. Fixture files are staged together in a temporary
 working directory for both implementations.
 
+## Progress accounting
+
+`make assess` refreshes the corpus inventory, isolated runtime discovery,
+reference Vim9 results, selected differential tests and freshness-checked progress
+ledger. `make progress` reads existing evidence and generates `reports/progress.json`,
+`reports/progress.tsv` and `reports/progress.md`. `make progress-check` rejects
+stale/missing/inconsistent inputs. The current workflow does not run all editor
+suites on either implementation; their entries remain unrun.
+
+The ledger separates whole original tests from fragments, authored regressions,
+reference-only successes, skips, unknowns and stale results. Sample matches never
+promote a parent Test_ function to complete equivalence. No global compatibility
+percentage is claimed. Full observables, profiles and adapter obligations are
+specified in [conformance/README.md](conformance/README.md).
+
 ## Reproduce
 
 On Linux x86_64 with Bash, Git, curl, tar, GCC, make, sha256sum and libtinfo:

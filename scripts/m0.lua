@@ -1,5 +1,8 @@
 -- Run with: nvim --headless -u NONE -l scripts/m0.lua <command>
 local root = vim.fn.fnamemodify(debug.getinfo(1, 'S').source:sub(2), ':p:h:h')
+vim.opt.runtimepath:prepend(root)
+local U=require('vim9.conformance.util')
+local Compare=require('vim9.conformance.compare')
 local uv, lpeg = vim.uv, vim.lpeg
 local P, R, S, C = lpeg.P, lpeg.R, lpeg.S, lpeg.C
 local function path(p) return root .. '/' .. p end
@@ -46,7 +49,7 @@ local function inventory()
       if name then
         count = count + 1
         tests[#tests+1] = {id=rel .. ':' .. name .. ':' .. n, file=rel, name=name, line=n,
-          status='UNSUPPORTED', reason='Not executed against emulator in M0',
+          status='NOT_RUN', reason='Lexical declaration only; not an emulator execution',
           discovery='lexical candidate; runtime discovery remains authoritative'}
       end
       if line:match('^%s*source%s') or line:match('^%s*import%s') then deps[#deps+1]={line=n,text=line} end
@@ -112,17 +115,35 @@ local function fixture()
 end
 local function reference()
   local bin=path('upstream/vim/src/vim')
-  local dir=path('upstream/vim/src/testdir')
+  -- Every suite gets pristine tracked files: official tests can source other
+  -- runners and mutate cwd/output files. Shared messages are not evidence.
+  local tmp=vim.fn.tempname()
+  vim.fn.mkdir(tmp..'/seed/src/testdir','p')
+  local tracked=vim.split(checked({'git','-C',path('upstream/vim'),'ls-files','src/testdir'}),'\n',{plain=true})
+  for _,file in ipairs(tracked) do
+    local target=tmp..'/seed/'..file
+    vim.fn.mkdir(vim.fn.fnamemodify(target,':h'),'p')
+    assert(uv.fs_copyfile(path('upstream/vim/'..file),target))
+  end
   local results={}
   local inv=load(path('reports/inventory.json'))
+  local fingerprint=U.fingerprint(root)
   for _,file in ipairs(inv.files) do
     if file.vim9_suite then
       local name=vim.fn.fnamemodify(file.file,':t')
-      -- Upstream runtest writes .res/messages/test.log; reset its known outputs.
-      for _,f in ipairs({'messages','test.log', name:gsub('%.vim$','.res')}) do vim.fn.delete(dir..'/'..f) end
+      local work=tmp..'/case'
+      vim.fn.delete(work,'rf');vim.fn.mkdir(work..'/src','p')
+      checked({'cp','-a','--reflink=auto',tmp..'/seed/src/testdir',work..'/src/testdir'})
+      for _,dependency in ipairs(vim.fn.glob(path('upstream/vim/src/*'),false,true)) do
+        local base=vim.fn.fnamemodify(dependency,':t')
+        if base~='testdir' then assert(uv.fs_symlink(dependency,work..'/src/'..base)) end
+      end
+      assert(uv.fs_symlink(path('upstream/vim/runtime'),work..'/runtime'))
+      local dir=work..'/src/testdir'
+      write(dir..'/vimcmd',bin..'\n')
       local r=process({bin,'-f','-u','util/unix.vim','-i','NONE','--noplugin','--not-a-term',
         '-S','runtest.vim',name}, {cwd=dir,env={VIMRUNTIME=path('upstream/vim/runtime'),
-        TEST_NO_RETRY='yes',TEST_FILTER='',TEST_SKIP_PAT='',TEST_MAY_FAIL='',TERM='xterm'}})
+        XXD=path('upstream/vim/src/xxd/xxd'),TEST_NO_RETRY='yes',TEST_FILTER='',TEST_SKIP_PAT='',TEST_MAY_FAIL='',TERM='xterm'}})
       local message=vim.fn.filereadable(dir..'/messages')==1 and read(dir..'/messages') or ''
       local log=vim.fn.filereadable(dir..'/test.log')==1 and read(dir..'/test.log') or ''
       local completed=vim.fn.filereadable(dir..'/'..name:gsub('%.vim$','.res'))==1
@@ -134,18 +155,21 @@ local function reference()
         skipped[#skipped+1]={name=test,reason=reason}
         for _,t in ipairs(executed) do if t.name==test then t.status='SKIP'; t.reason=reason end end
       end
-      local passed=completed and #executed>0 and log:match('^%s*$') ~= nil and r.code==0
-      local suite_skip=completed and r.code==0 and not log:match('%S') and message:find('SKIPPED '..name..':',1,true)
+      local identity=message:find('From '..name..':',1,true) ~= nil
+      local passed=identity and completed and #executed>0 and log:match('^%s*$') ~= nil and r.code==0
+      local suite_skip=identity and completed and r.code==0 and not log:match('%S') and message:find('SKIPPED '..name..':',1,true)
       local status=passed and 'PASS' or suite_skip and 'SKIP' or (log:match('%S') and 'FAIL' or 'HARNESS_ERROR')
-      results[#results+1]={file=file.file,status=status,exit_code=r.code,signal=r.signal,
+      results[#results+1]={file=file.file,source_sha256=U.hash(path(file.file)),status=status,exit_code=r.code,signal=r.signal,
         messages=message,errors=log,stdout=r.stdout,stderr=r.stderr,
         attempted=#executed,passed=passed and (#executed-#skipped) or nil,skipped=skipped,
         skip_reason=suite_skip and message:match('SKIPPED '..name:gsub('%.','%%.')..': ([^\n]*)') or nil,
         tests=passed and executed or nil}
-      json(path('reports/reference.json'),{vim_commit=sha('upstream/vim'),suites=results})
+      json(path('reports/reference.json'),{schema_version=1,fingerprint=fingerprint,vim_commit=sha('upstream/vim'),scope='all-vim9-suites',complete=false,suites=results})
       print(name..': '..status)
     end
   end
+  json(path('reports/reference.json'),{schema_version=1,fingerprint=fingerprint,vim_commit=sha('upstream/vim'),scope='all-vim9-suites',complete=true,suites=results})
+  vim.fn.delete(tmp,'rf')
   for _,result in ipairs(results) do if result.status~='PASS' and result.status~='SKIP' then return false end end
   return true
 end
@@ -159,6 +183,7 @@ local function classify(reference_result,candidate)
 end
 local function differential(manifest,report)
   local results={}
+  local fingerprint=U.fingerprint(root)
   for _,f in ipairs(load(path(manifest or 'tests/fixtures/manifest.json'))) do
     local tmp=vim.fn.tempname(); vim.fn.mkdir(tmp,'p')
     local source=read(path(f.file))
@@ -178,7 +203,7 @@ local function differential(manifest,report)
       "call writefile([json_encode({'assertions': v:errors, 'exception': g:exception, 'throwpoint': g:throwpoint})], "..vim.fn.string(output)..")",'qa!'},'\n'))
     local r=process({path('upstream/vim/src/vim'),'-N','-n','-es','-u','NONE','-i','NONE','-S',wrapper},
       {cwd=tmp,env={VIMRUNTIME=path('upstream/vim/runtime')}})
-    local ref={status='HARNESS_ERROR',exit_code=r.code}
+    local ref={status='HARNESS_ERROR',exit_code=r.code,timeout=r.code==124}
     if r.code==0 and vim.fn.filereadable(output)==1 then
       ref.observation=load(output)
       ref.status= #ref.observation.assertions==0 and ref.observation.exception=='' and 'PASS' or 'FAIL'
@@ -186,22 +211,20 @@ local function differential(manifest,report)
     local candidate_output=tmp..'/candidate.json'
     json(tmp..'/request.json',{root=root,source=source,filename=f.support_files and script or f.file,output=candidate_output,runtimepath=f.support_files and {tmp..'/rtp'} or nil})
     local c=process({vim.v.progpath,'--headless','-u','NONE','-i','NONE','-l',path('tests/candidate.lua'),tmp..'/request.json'}, {cwd=tmp})
-    local candidate={status='HARNESS_ERROR',reason=c.stderr,exit_code=c.code}
+    local candidate={status='HARNESS_ERROR',reason=c.stderr,exit_code=c.code,timeout=c.code==124}
     if c.code==0 and vim.fn.filereadable(candidate_output)==1 then
       local ok,data=pcall(load,candidate_output)
       if ok then candidate=data end
     end
-    local status=classify(ref,candidate)
-    if f.expected_exception then
-      if not ref.observation or ref.observation.exception~=f.expected_exception or #ref.observation.assertions~=0 then status='HARNESS_ERROR'
-      elseif candidate.status=='UNSUPPORTED' then status='UNSUPPORTED'
-      elseif candidate.status=='FAIL' and candidate.observation.exception==f.expected_exception and #candidate.observation.assertions==0 then status='PASS'
-      else status='FAIL' end
-    end
-    results[#results+1]={id=f.id,fixture=f,reference=ref,candidate=candidate,status=status}
+    local comparison=Compare.compare(ref,candidate,f)
+    local statuses={MATCH='PASS',MISMATCH='FAIL',UNSUPPORTED='UNSUPPORTED',BLOCKED='SKIP',TIMEOUT='HARNESS_ERROR',ORACLE_TIMEOUT='HARNESS_ERROR',ORACLE_ERROR='HARNESS_ERROR',HARNESS_ERROR='HARNESS_ERROR'}
+    local status=statuses[comparison.verdict]
+    local original=f.source_file or f.upstream
+    results[#results+1]={id=f.id,fixture=f,reference=ref,candidate=candidate,status=status,comparison=comparison,
+      upstream_sha256=original and U.hash(path(original)) or nil}
     vim.fn.delete(tmp,'rf')
   end
-  json(path(report or 'reports/differential.json'),{scope=manifest and (manifest:match('regression') and 'Authored semantic regressions; not upstream tests' or (manifest:match('/m3/') and 'Selected official-derived and authored multi-file M3 cases; not whole-suite conformance' or 'Selected official M1/M2 cases; not whole-suite conformance')) or 'Number fixtures only; not whole-suite conformance',results=results})
+  json(path(report or 'reports/differential.json'),{schema_version=1,fingerprint=fingerprint,manifest_sha256=U.hash(path(manifest or 'tests/fixtures/manifest.json')),scope=manifest and (manifest:match('regression') and 'Authored semantic regressions; not upstream tests' or (manifest:match('/m3/') and 'Selected official-derived and authored multi-file M3 cases; not whole-suite conformance' or 'Selected official M1/M2 cases; not whole-suite conformance')) or 'Number fixtures only; not whole-suite conformance',results=results})
   for _,r in ipairs(results) do print(r.id..': reference='..r.reference.status..', emulator='..r.status) end
   for _,r in ipairs(results) do if r.status=='HARNESS_ERROR' or r.status=='FAIL' or (manifest and r.status~='PASS') then return false end end
   return true

@@ -1,0 +1,27 @@
+name: Conformance evidence
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  assess:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build pinned reference and host
+        run: make bootstrap
+      - name: Discover, verify and account for conformance
+        run: make assess
+      - name: Preserve evidence, including failed runs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: conformance-${{ github.sha }}
+          path: |
+            sources.lock.json
+            reports/
+            conformance/
+          retention-days: 30

@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "helper_files": {
+    "upstream/vim/src/testdir/test_gettext_makefile_in1.vim": {"owner":"upstream/vim/src/testdir/test_gettext_make.vim","reason":"gettext extraction input fixture, referenced by the owning test; not an independent Test_ suite"},
+    "upstream/vim/src/testdir/test_gettext_makefile_in2.vim": {"owner":"upstream/vim/src/testdir/test_gettext_make.vim","reason":"gettext extraction input fixture, referenced by the owning test; not an independent Test_ suite"},
+    "upstream/vim/src/testdir/test_gettext_makefile_in3.vim": {"owner":"upstream/vim/src/testdir/test_gettext_make.vim","reason":"gettext extraction input fixture, referenced by the owning test; not an independent Test_ suite"},
+    "upstream/vim/src/testdir/test_gettext_makefile_in4.vim": {"owner":"upstream/vim/src/testdir/test_gettext_make.vim","reason":"gettext extraction input fixture, referenced by the owning test; not an independent Test_ suite"}
+  }
+}

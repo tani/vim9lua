@@ -1,9 +1,16 @@
+.deps/nvim-linux-x86_64/bin/nvim --headless -u NONE -l scripts/m0.lua reference
 test_vim9_assign.vim: PASS
 test_vim9_builtin.vim: PASS
+test_vim9_class.vim: PASS
 test_vim9_cmd.vim: PASS
 test_vim9_disassemble.vim: PASS
+test_vim9_enum.vim: PASS
 test_vim9_expr.vim: PASS
 test_vim9_fails.vim: PASS
 test_vim9_func.vim: PASS
+test_vim9_generics.vim: PASS
 test_vim9_import.vim: PASS
+test_vim9_interface.vim: PASS
+test_vim9_python3.vim: SKIP
 test_vim9_script.vim: PASS
+test_vim9_typealias.vim: PASS

@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "target": "Vim 9 at the exact sources.lock.json revision; eventual complete language and editor compatibility",
+  "scope": {"modern": "All tracked src/testdir/test_*.vim files, including editor/legacy Vimscript tests", "legacy": "All tracked src/testdir/test*.in inputs; separate legacy runner adapter required"},
+  "profile": "linux-x86_64-huge-terminal-no-gui-no-python3-neovim-0.11.3",
+  "required_observables": ["assertions", "exception_text", "error_stage", "throwpoint_stack", "messages", "editor_state", "filesystem", "process_events", "ui"],
+  "sample_observables": ["assertions", "exception_text"],
+  "whole_test_credit": "Only a registered original-runner adapter with matching preparation, SetUp/TearDown, full body, all applicable observables, current fingerprints and a successful reference result may establish full-test equivalence.",
+  "unknowns": "Lexical declarations are candidates, not an executed-test denominator. A skipped/failed discovery or legacy input remains denominator debt. Skips never earn conformance credit.",
+  "claim": "Even 100% of a fixed test corpus/profile is empirical test conformance, not a proof of universal observational equivalence. Cross-platform and optional-feature profiles remain separate obligations."
+}

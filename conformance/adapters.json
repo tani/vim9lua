@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "whole_test_adapters": [],
+  "note": "No original-runner emulator adapter exists yet. Whole-test equivalence credit is intentionally zero. Register an implementation with observable and preparation contracts before ingesting full-test results.",
+  "sample_sources": [
+    {"report": "reports/differential.json", "manifest": "tests/fixtures/manifest.json"},
+    {"report": "reports/m12.json", "manifest": "tests/m12/manifest.json"},
+    {"report": "reports/m3.json", "manifest": "tests/m3/manifest.json"},
+    {"report": "reports/regression.json", "manifest": "tests/regression/manifest.json"}
+  ],
+  "official_sample_mappings": {
+    "official-import-export": {"file": "upstream/vim/src/testdir/test_vim9_import.vim", "test": "Test_vim9_import_export"},
+    "official-import-exists": {"file": "upstream/vim/src/testdir/test_vim9_import.vim", "test": "Test_vim9_import_export"},
+    "official-noclear": {"file": "upstream/vim/src/testdir/test_vim9_import.vim", "test": "Test_vim9_reload_noclear"}
+  }
+}

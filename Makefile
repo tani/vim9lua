@@ -25,10 +25,31 @@ regression: regression-fixtures
 	$(NVIM) --headless -u NONE -l scripts/m0.lua regression
 unit:
 	$(NVIM) --headless -u NONE -l tests/unit.lua
-test: unit selftest differential m12 regression m3
+test: unit conformance-unit selftest differential m12 regression m3
 
 .PHONY: m3 m3-fixtures
 m3-fixtures:
 	$(NVIM) --headless -u NONE -l scripts/m3-fixtures.lua
 m3: m3-fixtures
 	$(NVIM) --headless -u NONE -l scripts/m0.lua m3
+
+.PHONY: discover progress progress-check conformance-unit assess
+discover:
+	$(NVIM) --headless -u NONE -l scripts/discover.lua
+progress:
+	$(NVIM) --headless -u NONE -l scripts/progress.lua
+progress-check:
+	$(NVIM) --headless -u NONE -l scripts/progress.lua --strict
+conformance-unit:
+	$(NVIM) --headless -u NONE -l tests/conformance.lua
+assess:
+	$(MAKE) inventory
+	$(MAKE) discover
+	$(MAKE) reference
+	$(MAKE) test
+	$(MAKE) progress-check
+	$(MAKE) progress-integration
+
+.PHONY: progress-integration
+progress-integration:
+	$(NVIM) --headless -u NONE -l tests/progress-integration.lua
