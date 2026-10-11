@@ -40,8 +40,10 @@ filename for relative imports. `session:source(path)` rereads a file. The sessio
 retains `v:errors`, messages and its cumulative step count; create a new session
 for isolation. These APIs execute the emulator and do not register Neovim
 `:source` hooks.
-The result contains a status, assertion/exception observations, emitted messages
-and an execution step count. Unsupported features are explicit `UNSUPPORTED`.
+The result contains a status, assertion/exception observations and an execution
+step count. `observation.emitted_messages` is an immutable string snapshot of
+output emitted by that action; top-level `messages` is the cumulative rendered
+list for a persistent session. Unsupported features are explicit `UNSUPPORTED`.
 The default execution budget is 1,000,000 AST steps and is configurable with
 `step_limit`; exhaustion is not a successful or catchable Vim exception.
 
@@ -66,7 +68,7 @@ Implemented and tested:
   `defcompile` is a no-op while static validation remains deferred.
 
 **Current validation: 83 official-derived cases pass differential testing,
-plus 11 authored semantic regression cases.** The number-literal smoke test
+plus 12 authored semantic regression cases.** The number-literal smoke test
 also passes in script and def contexts. These are selected cases, not whole-suite
 Vim conformance, and not a claim that all tests within their parent functions pass.
 One regression intentionally throws: passing means both implementations produce
@@ -97,8 +99,9 @@ The unchanged M1/M2 checks still pass. Additional API unit checks cover session
 isolation, persistent globals, function references and source error filenames.
 These are selected cases, not whole-suite conformance. The M3 manifest records
 upstream line ranges and hashes for the official-derived cases and labels the
-separately authored cases. Fixture files are staged together in a temporary
-working directory for both implementations.
+separately authored cases. Reference and candidate fixture/support files are
+staged in separate temporary working directories, isolating their working-file
+side effects (not arbitrary OS side effects).
 
 ## Progress accounting
 
@@ -185,10 +188,17 @@ unimplemented host builtins produce `UNSUPPORTED`.
 Immutable global declarations, computed dictionary keys, complex interpolation,
 container edge cases and the full builtin library still need coverage and work.
 Supported behavior is bounded by the explicit tests; additional syntax is not
-silently forwarded to the host. Messages are recorded, but the differential
-adapter currently compares assertions and exceptions, not message/UI/file output.
-For the expected uncaught-exception regression it compares the exception text;
-full throwpoint-stack and error-stage equivalence are future work.
+silently forwarded to the host. The sample adapter compares assertions,
+exception text and bounded `emitted_messages`, not the complete messages, UI or
+filesystem obligations. Modern `true`, `false` and `null` display is covered in
+`echo` and `string()`, along with command-specific control rendering.
+The host text primitive `vim.fn.strtrans` is used for display only; it never
+delegates source execution to Neovim. Tested message samples retain leading
+newlines, blank output, controls and Unicode without comparator normalization.
+Message history, silent/highlight behavior, nested redirection, leading combining
+characters and display geometry remain debt, as do full throwpoint-stack,
+error-stage and diagnostic equivalence. The expected uncaught-exception
+regression compares exception text, not those complete diagnostic obligations.
 
 ## Tests and source study
 

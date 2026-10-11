@@ -188,29 +188,34 @@ local function differential(manifest,report)
     local tmp=vim.fn.tempname(); vim.fn.mkdir(tmp,'p')
     local source=read(path(f.file))
     assert(vim.fn.sha256(source)==f.sha256,'Fixture content differs from manifest')
-    local script=tmp..'/case.vim'; write(script,source)
+    -- Neither implementation may observe files mutated by the other.
+    local reference_dir=tmp..'/reference';local candidate_dir=tmp..'/candidate'
+    vim.fn.mkdir(reference_dir,'p');vim.fn.mkdir(candidate_dir,'p')
+    local reference_script=reference_dir..'/case.vim';local candidate_script=candidate_dir..'/case.vim'
+    write(reference_script,source);write(candidate_script,source)
     for _,support in ipairs(f.support_files or {}) do
       local text=read(path(support.file));assert(vim.fn.sha256(text)==support.sha256,'Support fixture differs from manifest')
-      write(tmp..'/'..support.name,text)
+      write(reference_dir..'/'..support.name,text);write(candidate_dir..'/'..support.name,text)
     end
-    if f.support_files then vim.fn.mkdir(tmp..'/sub','p') end
+    if f.support_files then vim.fn.mkdir(reference_dir..'/sub','p');vim.fn.mkdir(candidate_dir..'/sub','p') end
     local output=tmp..'/reference.json'
     local wrapper=tmp..'/run.vim'
     write(wrapper, table.concat({
-      'set nocp nomore', f.support_files and ("execute 'set rtp^=' .. fnameescape("..vim.fn.string(tmp..'/rtp')..")") or '', 'let v:errors = []', 'let g:exception = ""', 'let g:throwpoint = ""',
-      'try', "execute 'source ' .. fnameescape("..vim.fn.string(script)..")", 'catch',
-      'let g:exception = v:exception', 'let g:throwpoint = v:throwpoint', 'endtry',
-      "call writefile([json_encode({'assertions': v:errors, 'exception': g:exception, 'throwpoint': g:throwpoint})], "..vim.fn.string(output)..")",'qa!'},'\n'))
+      'set nocp nomore', f.support_files and ("execute 'set rtp^=' .. fnameescape("..vim.fn.string(reference_dir..'/rtp')..")") or '', 'let v:errors = []', 'let g:exception = ""', 'let g:throwpoint = ""',
+      'redir => g:emitted_messages',
+      'try', "execute 'source ' .. fnameescape("..vim.fn.string(reference_script)..")", 'catch',
+      'let g:exception = v:exception', 'let g:throwpoint = v:throwpoint', 'finally', 'redir END', 'endtry',
+      "call writefile([json_encode({'assertions': v:errors, 'exception': g:exception, 'throwpoint': g:throwpoint, 'emitted_messages': g:emitted_messages})], "..vim.fn.string(output)..")",'qa!'},'\n'))
     local r=process({path('upstream/vim/src/vim'),'-N','-n','-es','-u','NONE','-i','NONE','-S',wrapper},
-      {cwd=tmp,env={VIMRUNTIME=path('upstream/vim/runtime')}})
+      {cwd=reference_dir,env={VIMRUNTIME=path('upstream/vim/runtime')}})
     local ref={status='HARNESS_ERROR',exit_code=r.code,timeout=r.code==124}
     if r.code==0 and vim.fn.filereadable(output)==1 then
       ref.observation=load(output)
       ref.status= #ref.observation.assertions==0 and ref.observation.exception=='' and 'PASS' or 'FAIL'
     end
     local candidate_output=tmp..'/candidate.json'
-    json(tmp..'/request.json',{root=root,source=source,filename=f.support_files and script or f.file,output=candidate_output,runtimepath=f.support_files and {tmp..'/rtp'} or nil})
-    local c=process({vim.v.progpath,'--headless','-u','NONE','-i','NONE','-l',path('tests/candidate.lua'),tmp..'/request.json'}, {cwd=tmp})
+    json(tmp..'/request.json',{root=root,source=source,filename=f.support_files and candidate_script or f.file,output=candidate_output,runtimepath=f.support_files and {candidate_dir..'/rtp'} or nil})
+    local c=process({vim.v.progpath,'--headless','-u','NONE','-i','NONE','-l',path('tests/candidate.lua'),tmp..'/request.json'}, {cwd=candidate_dir})
     local candidate={status='HARNESS_ERROR',reason=c.stderr,exit_code=c.code,timeout=c.code==124}
     if c.code==0 and vim.fn.filereadable(candidate_output)==1 then
       local ok,data=pcall(load,candidate_output)
@@ -230,7 +235,7 @@ local function differential(manifest,report)
   return true
 end
 local function selftest()
-  local r={status='PASS',observation={assertions={},exception='',throwpoint=''}}
+  local r={status='PASS',observation={assertions={},exception='',throwpoint='',emitted_messages=''}}
   assert(classify(r,vim.deepcopy(r))=='PASS')
   assert(classify(r,{status='PASS',observation={}})=='FAIL')
   assert(classify(r,{status='UNSUPPORTED'})=='UNSUPPORTED')

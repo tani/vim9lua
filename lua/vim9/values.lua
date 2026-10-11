@@ -59,10 +59,10 @@ function M.text(v)
 end
 function M.repr(v, seen)
   if v.kind=='string' then return "'"..v.data:gsub("'","''").."'" end
-  if v.kind=='bool' then return v.data and 'v:true' or 'v:false' end
+  if v.kind=='bool' then return v.data and 'true' or 'false' end
   if v.kind=='number' or v.kind=='float' then return M.text(v) end
   if v.kind=='none' then return 'v:none' end
-  if v.kind=='null' then return 'v:null' end
+  if v.kind=='null' then return 'null' end
   if v.kind=='func' then return 'function('..(v.data.name or '<lambda>')..')' end
   if v.kind=='void' then return '' end
   seen=seen or {}; if seen[v] then return '[...]' end; seen[v]=true

@@ -306,7 +306,12 @@ function State:statement(n,env)
   local text=table.concat(xs,' ')
   if k=='echoerr' then E.raise('Vim(echoerr)',text,n)
   elseif k=='execute' then local tree=require('vim9.parser').parse(text);return self:block(tree.body,env)
-  else self.messages[#self.messages+1]=text end
+  else
+   if k=='echo' then
+    text=text:gsub('[^\n\r\t]+',function(chunk) return vim.fn.strtrans(chunk) end)
+   else text=vim.fn.strtrans(text) end
+   self.messages[#self.messages+1]=text
+  end
  elseif k=='unlet' then
   for _,name in ipairs(n.names) do
    if name:sub(1,2)=='g:' then if not self.globals[name:sub(3)] then E.raise('E108','No such variable: '..name,n) end;self.globals[name:sub(3)]=nil

@@ -27,7 +27,7 @@ local function main()
  report.fingerprint.interpreter='stale'
  U.save(root..'/reports/m12.json',report)
  failed,data=check()
- assert(failed.code~=0 and (data.summary.evidence_statuses.STALE or 0)>=83,'Stale execution results must fail strict validation')
+ assert(failed.code~=0 and (data.summary.evidence_statuses.STALE or 0)>=#report.results,'Stale execution results must fail strict validation')
  U.write(root..'/reports/m12.json',saved['reports/m12.json'])
  report=vim.json.decode(saved['reports/m12.json'])
  report.results[1].reference.observation.assertions={'Injected oracle failure'}
@@ -35,12 +35,26 @@ local function main()
  failed,data=check()
  assert(failed.code~=0 and (data.summary.evidence_statuses.HARNESS_ERROR or 0)>0,'Forged MATCH must be recomputed and rejected')
  U.write(root..'/reports/m12.json',saved['reports/m12.json'])
+ report=vim.json.decode(saved['reports/m12.json'])
+ local matching
+ for _,result in ipairs(report.results) do
+  if result.comparison.verdict=='MATCH' then matching=result;break end
+ end
+ assert(matching,'Current report must contain a sample MATCH to test forged message equality')
+ assert(type(matching.reference.observation.emitted_messages)=='string')
+ assert(type(matching.candidate.observation.emitted_messages)=='string')
+ assert(matching.reference.observation.emitted_messages==matching.candidate.observation.emitted_messages)
+ matching.candidate.observation.emitted_messages=matching.candidate.observation.emitted_messages..'\nInjected candidate output'
+ U.save(root..'/reports/m12.json',report)
+ failed,data=check()
+ assert(failed.code~=0 and (data.summary.evidence_statuses.HARNESS_ERROR or 0)>0,'Message-only divergence retaining MATCH must be recomputed and rejected')
+ U.write(root..'/reports/m12.json',saved['reports/m12.json'])
  changed_fixture=report.results[1].fixture.file
  saved[changed_fixture]=U.read(root..'/'..changed_fixture)
  U.write(root..'/'..changed_fixture,saved[changed_fixture]..'\n# changed after execution\n')
  failed,data=check()
  assert(failed.code~=0 and (data.summary.evidence_statuses.STALE or 0)>0,'Changed fixture bytes must invalidate the evidence')
- print('Strict progress rejects foreign suite results, stale code, forged verdicts and changed fixture content')
+ print('Strict progress rejects foreign suite results, stale code, forged verdicts, forged message equality and changed fixture content')
 end
 local ok,err=xpcall(main,debug.traceback)
 for path,text in pairs(saved) do U.write(root..'/'..path,text) end

@@ -1,8 +1,9 @@
 local M={}
-M.dimensions={'assertions','exception_text'}
+M.dimensions={'assertions','exception_text','emitted_messages'}
 local function valid(r)
  if type(r)~='table' or type(r.observation)~='table' or type(r.observation.assertions)~='table'
-  or not vim.islist(r.observation.assertions) or type(r.observation.exception)~='string' then return false end
+  or not vim.islist(r.observation.assertions) or type(r.observation.exception)~='string'
+  or type(r.observation.emitted_messages)~='string' then return false end
  for _,text in ipairs(r.observation.assertions) do if type(text)~='string' then return false end end
  return true
 end
@@ -20,7 +21,8 @@ function M.compare(reference,candidate,fixture)
  if not valid(candidate) or candidate.status=='HARNESS_ERROR' then return result('HARNESS_ERROR','No valid candidate observation') end
  checks.assertions=vim.deep_equal(reference.observation.assertions,candidate.observation.assertions)
  checks.exception_text=reference.observation.exception==candidate.observation.exception
- if not checks.assertions or not checks.exception_text then return result('MISMATCH','Observed assertion or exception differs') end
+ checks.emitted_messages=reference.observation.emitted_messages==candidate.observation.emitted_messages
+ if not checks.assertions or not checks.exception_text or not checks.emitted_messages then return result('MISMATCH','Observed assertion, exception or emitted messages differ') end
  if (expected=='' and candidate.status~='PASS') or (expected~='' and candidate.status~='FAIL') then return result('HARNESS_ERROR','Candidate status contradicts observation') end
  return result('MATCH','Only the declared sample observables match')
 end

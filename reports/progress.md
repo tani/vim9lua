@@ -6,13 +6,13 @@ This is a fixed-corpus, fixed-profile evidence ledger. No global compatibility p
 |---|---:|
 | Catalogued modern files | 318 |
 | Standalone modern suites / helper inputs | 314 / 4 |
-| Confirmed runtime Test_ entry points | 7805 |
+| Confirmed runtime Test_ entry points | 7808 |
 | Whole tests with all required observables equivalent | 0 |
 | Parents with matching sample evidence | 35 |
-| Unique matching samples (official-derived / authored) | 112 (86 / 26) |
+| Unique matching samples (official-derived / authored) | 113 (86 / 27) |
 | Duplicate sample records | 2 |
-| Suites with unresolved runtime denominator | 30 |
-| Lexical candidates in those unresolved suites | 431 |
+| Suites with unresolved runtime denominator | 29 |
+| Lexical candidates in those unresolved suites | 428 |
 | Legacy input scenarios awaiting an adapter | 12 |
 
 The whole-test lower bound does not measure the amount of implemented functionality. Fragment matches never earn whole-test credit. Unknowns and skips remain obligations.

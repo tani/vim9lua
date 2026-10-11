@@ -50,7 +50,7 @@ still obligations; this terminal build cannot establish their equivalence.
 
 ## Evidence and verdicts
 
-- MATCH: the declared sample assertions and exception text agree.
+- MATCH: the declared sample assertions, exception text and emitted messages agree.
 - MISMATCH: those candidate observations differ.
 - UNSUPPORTED: the interpreter explicitly rejects a feature.
 - ORACLE_ERROR / ORACLE_TIMEOUT: the reference failed the fixture expectation
@@ -64,6 +64,12 @@ fixture metadata against the manifest, checks all fixture/support/original-file
 hashes and distinguishes expected negative cases from accidental oracle failure.
 Duplicate number fixtures in the smoke and M1/M2 suites are retained but counted
 once. Authored regressions are not added to the official-test denominator.
+
+Reference and candidate samples execute in independent temporary working
+directories with separate fixture/support copies. The reference starts exact
+`redir` capture before sourcing the fixture and ends it in `finally`, including
+output before an uncaught exception. Captured leading newlines, blank output,
+controls and Unicode are retained; the comparator performs no normalization.
 
 Reference suites run in pristine copied directories using the unmodified runner.
 Their output identity, completion marker, planned suite coverage and test names
@@ -89,8 +95,20 @@ registration is a reviewed implementation change, not a result-file shortcut.
 
 The complete contract requires assertions, exception text, error stage,
 throwpoint stack, messages, editor state, filesystem, process events and UI.
-The current sample adapter compares only assertions and exception text. Remaining
-observables are explicit debt, not assumed equal when omitted.
+The current sample adapter compares `assertions`, `exception_text` and
+`emitted_messages`. The last is a bounded per-action immutable string snapshot;
+the public API's top-level `messages` remains a cumulative rendered list in
+persistent sessions. This sample observable does not discharge the full required
+`messages` obligation or earn whole-test messages/UI credit.
+
+Tested samples cover modern `true`/`false`/`null` display in `echo` and `string()`
+and command-specific control rendering. The host text primitive
+`vim.fn.strtrans` supplies display rendering only, never source execution.
+Message history, silent/highlight behavior, nested redirection, leading combining
+characters/display geometry, error stage, throwpoint stacks and diagnostics
+remain explicit debt. Full original-runner adapters remain unregistered and
+whole-test equivalence credit remains zero; omitted observables are not assumed
+equal.
 
 Fingerprints record actual interpreter/harness content, contract/adapter/catalog
 configuration, exact Vim revision, reference and Neovim executable hashes, host

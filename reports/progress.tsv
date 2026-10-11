@@ -4073,7 +4073,9 @@ upstream/vim/src/testdir/test_registers.vim	Test_yank_shows_register	DISCOVERED	
 upstream/vim/src/testdir/test_registers.vim	Test_zero_y_append	DISCOVERED	NOT_RUN	NOT_RUN	0
 upstream/vim/src/testdir/test_registers.vim	Test_zz_recording_with_select_mode_utf8_gui	DISCOVERED	NOT_RUN	NOT_RUN	0
 upstream/vim/src/testdir/test_reltime.vim	Test_reltime	DISCOVERED	NOT_RUN	NOT_RUN	0
-upstream/vim/src/testdir/test_remote.vim		BLOCKED	NOT_RUN	BLOCKED	0
+upstream/vim/src/testdir/test_remote.vim	Test_remote_servername	DISCOVERED	NOT_RUN	NOT_RUN	0
+upstream/vim/src/testdir/test_remote.vim	Test_remote_servername_itself	DISCOVERED	NOT_RUN	NOT_RUN	0
+upstream/vim/src/testdir/test_remote.vim	Test_remote_servername_shellslash	DISCOVERED	NOT_RUN	NOT_RUN	0
 upstream/vim/src/testdir/test_rename.vim	Test_rename_copy	DISCOVERED	NOT_RUN	NOT_RUN	0
 upstream/vim/src/testdir/test_rename.vim	Test_rename_dir_to_dir	DISCOVERED	NOT_RUN	NOT_RUN	0
 upstream/vim/src/testdir/test_rename.vim	Test_rename_fails	DISCOVERED	NOT_RUN	NOT_RUN	0

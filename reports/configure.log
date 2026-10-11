@@ -1,9 +1,9 @@
-configure: creating cache auto/config.cache
+configure: loading cache auto/config.cache
 checking whether make sets $(MAKE)... yes
 checking for gcc... gcc
 checking whether the C compiler works... yes
 checking for C compiler default output file name... a.out
-checking for suffix of executables...
+checking for suffix of executables... 
 checking whether we are cross compiling... no
 checking for suffix of object files... o
 checking whether the compiler supports GNU C... yes
@@ -21,7 +21,7 @@ checking for pkg-config... no
 checking --enable-fail-if-missing argument... no
 checking for clang version... N/A
 checking for buggy tools... checking uname... Linux
-checking uname -r... 6.18.44
+checking uname -r... 7.0.0-1019-nvidia
 checking uname -m... x86_64
 checking for Haiku... no
 checking for QNX... no
@@ -72,7 +72,7 @@ checking --enable-cscope argument... yes
 checking --disable-netbeans argument... no
 checking --disable-channel argument... no
 checking for socket in -lsocket... no
-checking for gethostbyname in -lnsl... no
+checking for gethostbyname in -lnsl... yes
 checking whether compiling with IPv6 networking is possible... yes
 checking for inet_ntop... yes
 checking --enable-terminal argument... defaulting to yes
@@ -109,7 +109,7 @@ checking for stdlib.h... (cached) yes
 checking for string.h... (cached) yes
 checking for sys/select.h... (cached) yes
 checking for sys/utsname.h... yes
-checking for termcap.h... no
+checking for termcap.h... yes
 checking for fcntl.h... yes
 checking for sgtty.h... yes
 checking for sys/ioctl.h... yes
@@ -141,7 +141,7 @@ checking for libgen.h... yes
 checking for util/debug.h... no
 checking for util/msg18n.h... no
 checking for frame.h... no
-checking for sys/acl.h... no
+checking for sys/acl.h... yes
 checking for sys/access.h... no
 checking for sys/sysinfo.h... yes
 checking for wchar.h... yes
@@ -172,12 +172,10 @@ checking for linking with tinfo library... OK
 checking for tgetent()... yes
 checking whether we talk terminfo... yes
 checking what tgetent() returns for an unknown terminal... zero
-checking whether termcap.h contains ospeed... no
-checking whether ospeed can be extern... yes
-checking whether termcap.h contains UP, BC and PC... no
-checking whether UP, BC and PC can be extern... yes
+checking whether termcap.h contains ospeed... yes
+checking whether termcap.h contains UP, BC and PC... yes
 checking whether tputs() uses outfuntype... no
-checking whether del_curterm() can be used... no
+checking whether del_curterm() can be used... yes
 checking whether sys/select.h and sys/time.h may both be included... yes
 checking for /dev/ptc... no
 checking for SVR4 ptys... yes
@@ -259,8 +257,9 @@ checking for isinf()... yes
 checking for isnan()... yes
 checking --disable-acl argument... no
 checking for acl_get_file in -lposix1e... no
-checking for acl_get_file in -lacl... no
-checking for POSIX ACL support... no
+checking for acl_get_file in -lacl... yes
+checking for fgetxattr in -lattr... yes
+checking for POSIX ACL support... yes
 checking for acl_get in -lsec... no
 checking for Solaris ACL support... no
 checking for AIX ACL support... no
@@ -286,7 +285,7 @@ checking uint32_t is 32 bits... ok
 checking whether memmove handles overlaps... yes
 checking for _xpg4_setrunelocale in -lxpg4... no
 checking how to create tags... ctags
-checking how to run man with a section nr... man -s
+checking how to run man with a section nr... man
 checking --disable-nls argument... yes
 checking for dlfcn.h... yes
 checking for dlopen()... yes

@@ -2,13 +2,16 @@ local M={}
 function M.parse(source,opts) return require('vim9.parser').parse(source,opts) end
 local Session={};Session.__index=Session
 local function observe(state,action,filename)
+ local message_start=#state.messages
  local ok,result=pcall(action)
  if not ok and type(result)=='table' and result.kind=='unsupported' then
   return {status='UNSUPPORTED',reason=result.message,line=result.line}
  end
  local assertions={}
  for i=1,#state.special.errors.data do assertions[#assertions+1]=require('vim9.values').text(state.special.errors.data[i]) end
- local observation={assertions=assertions,exception='',throwpoint=''}
+ local emitted={}
+ for i=message_start+1,#state.messages do emitted[#emitted+1]='\n'..state.messages[i] end
+ local observation={assertions=assertions,exception='',throwpoint='',emitted_messages=table.concat(emitted)}
  if not ok then
   if type(result)~='table' or result.kind~='vim' then return {status='HARNESS_ERROR',reason=tostring(result)} end
   observation.exception=result.message
