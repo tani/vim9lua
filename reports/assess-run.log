@@ -1,3 +1,7 @@
+Command: pinned amd64/UTF-8 Docker runner, make assess
+Exit code: 0
+Wall time: 332.72 seconds
+
 make inventory
 make[1]: Entering directory '/work'
 .deps/nvim-linux-x86_64/bin/nvim --headless -u NONE -l scripts/m0.lua inventory
@@ -299,10 +303,16 @@ make[1]: Entering directory '/work'
 291/318 test_vim9_cmd.vim: DISCOVERED (73)
 292/318 test_vim9_disassemble.vim: DISCOVERED (119)
 
-[Showing lines 1-300 of 495. Use :301 to continue]
-Post-assessment preservation verification
-Command: scripts/m0.lua m3 && make progress-check progress-integration && comparator-smoke.lua (same amd64 Docker/UTF-8 profile)
+[Showing lines 1-300 of 499. Use :301 to continue]
+Final live-frame smoke (exit 0, 0.54 seconds; not whole credit)
+{"scope":"Real nested exception/action-phase probe; not original-runner or nine-channel credit","reference":{"throwpoint":"command line..script /tmp/nvim.root/1IKVfP/0/reference/observe.vim[7]..function FrameOuter[1]..FrameInner, line 1","exception":"frame-failure","action_phase":"body","stack":[{"lnum":7,"filepath":"/tmp/nvim.root/1IKVfP/0/reference/observe.vim"},{"filepath":"/tmp/nvim.root/1IKVfP/0/reference/case.vim","lnum":6,"funcref_text":"function('FrameOuter')"},{"filepath":"/tmp/nvim.root/1IKVfP/0/reference/case.vim","lnum":3,"funcref_text":"function('FrameInner')"}]},"candidate":{"status":"FAIL","observation":{"error_operation":"execute","error_stage":"body","emitted_messages":"","throwpoint":"/tmp/nvim.root/1IKVfP/0/candidate/case.vim, line 3","err…
+
+[Some lines truncated to 768 chars]
+Post-preservation verification
+Command: scripts/m0.lua m3 (without generator), make progress-check progress-integration, cmp saved user manifest
 Exit code: 0
+Wall time: 74.50 seconds
+
 official-import-export: reference=PASS, emulator=PASS
 official-import-exists: reference=PASS, emulator=PASS
 official-noclear: reference=PASS, emulator=PASS
@@ -322,9 +332,8 @@ runtimepath-import: reference=PASS, emulator=PASS
 invalid-imports: reference=PASS, emulator=PASS
 reload-clears-import: reference=PASS, emulator=PASS
 .deps/nvim-linux-x86_64/bin/nvim --headless -u NONE -l scripts/progress.lua --strict
-{"denominator_debt_suites":29,"legacy_inputs":12,"reference":{"current":true,"passed":1532,"skipped":20,"unrun_suites":299},"equivalent_whole_tests":0,"profile_complete":false,"authored_sample_matches":28,"official_sample_matches":90,"modern_files":318,"unique_sample_matches":118,"sample_duplicates":2,"suite_statuses":{"BLOCKED":28,"NO_TESTS":1,"HELPER":4,"DISCOVERED":285},"test_statuses":{"BLOCKED":1,"NOT_RUN":7772,"PARTIAL":36},"evidence_statuses":{"MATCH":120},"confirmed_runtime_tests":7808,"full_test_lower_bound_percent":0,"legacy_equivalent":0,"note":"Lower bound over confirmed runtime tests only. It is not a global compatibility estimate. Sample matches, skips and unknowns earn no full-test credit.","sample_supported_parents":36,"unique_sample_evidence…
+{"denominator_debt_suites":29,"legacy_inputs":12,"reference":{"passed":1532,"skipped":20,"current":true,"unrun_suites":299},"confirmed_runtime_tests":7808,"helper_files":4,"authored_sample_matches":28,"test_statuses":{"PARTIAL":36,"BLOCKED":1,"NOT_RUN":7772},"profile_complete":false,"unique_sample_matches":118,"sample_duplicates":2,"modern_files":318,"unique_sample_evidence":118,"suite_statuses":{"DISCOVERED":285,"BLOCKED":28,"NO_TESTS":1,"HELPER":4},"modern_suites":314,"evidence_statuses":{"MATCH":120},"global_compatibility_percent":null,"full_test_lower_bound_percent":0,"legacy_equivalent":0,"note":"Lower bound over confirmed runtime tests only. It is not a global compatibility estimate. Sample matches, skips and unknowns earn no full-test credit.","offici…
 .deps/nvim-linux-x86_64/bin/nvim --headless -u NONE -l tests/progress-integration.lua
 Strict progress rejects foreign/missing suite results, stale code, forged sample/whole comparisons, duplicate whole records and changed fixture content
-{"candidate_calls":[{"option_after":"@,48-57,_,192-255","observation":{"assertions":[],"throwpoint":"","emitted_messages":"","exception":""},"status":"PASS","return_value":0},{"option_after":"@,48-57,_,192-255","observation":{"assertions":[],"throwpoint":"","emitted_messages":"","exception":""},"status":"PASS","return_value":0},{"option_after":"@,48-57,_,192-255","observation":{"assertions":[],"throwpoint":"","emitted_messages":"","exception":""},"status":"PASS","return_value":0}],"option_mutations":[{"name":"isident","before":"@,48-57,_,192-255","after":"@,48-57,_,192-255,#"},{"name":"isident","before":"@,48-57,_,192-255,#","after":"@,48-57,_,192-255"},{"name":"isident","before":"@,48-57,_,192-255","after":"@,48-57,_,192-255,#"},{"name":"isident","before":"…
 
 [Some lines truncated to 768 chars]

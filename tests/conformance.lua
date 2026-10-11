@@ -179,6 +179,43 @@ local function main()
    assert(C.compare_whole(incomplete.reference,incomplete.candidate).verdict==expected_status)
   end
  end
+ -- Native stacks may contain event frames and genuine zero coordinates.
+ -- These are authored consumer controls, not executed producer evidence.
+ local native=vim.deepcopy(record)
+ local frames={
+  {kind='script',name='',file='',line=0},
+  {kind='event',name='',file='',line=0,event='BufEnter',filepath='',lnum=0},
+  {kind='function',name='Known',file=source,line=2,funcref_text="function('Known')"},
+ }
+ for _,side in ipairs({'reference','candidate'}) do
+  native[side].observation.channels.throwpoint_stack.records[5].exceptions={{throwpoint='native raw throwpoint',handled=true,frames=vim.deepcopy(frames)}}
+ end
+ assert(C.compare_whole(native.reference,native.candidate).verdict=='MATCH')
+ assert(L.credit_whole(native,fingerprint,adapters,required,context))
+ local different_event=vim.deepcopy(native)
+ different_event.candidate.observation.channels.throwpoint_stack.records[5].exceptions[1].frames[2].event='BufLeave'
+ assert(C.compare_whole(different_event.reference,different_event.candidate).verdict=='MISMATCH')
+ denied(different_event,nil,'FORGED_COMPARISON')
+ local frame_mutations={
+  function(frame) frame.line=-1 end,
+  function(frame) frame.line=0.5 end,
+  function(frame) frame.line=math.huge end,
+  function(frame) frame.line=nil end,
+  function(frame) frame.name=nil end,
+  function(frame) frame.file=nil end,
+  function(frame) frame.kind=nil end,
+  function(frame) frame.kind='builtin' end,
+  function(frame) frame.event=nil end,
+  function(frame) frame.event=17 end,
+ }
+ for _,side in ipairs({'reference','candidate'}) do
+  for _,mutate in ipairs(frame_mutations) do
+   local malformed=vim.deepcopy(native)
+   mutate(malformed[side].observation.channels.throwpoint_stack.records[5].exceptions[1].frames[2])
+   assert(C.compare_whole(malformed.reference,malformed.candidate).verdict==(side=='reference' and 'ORACLE_ERROR' or 'HARNESS_ERROR'))
+   denied(malformed,nil,'FORGED_COMPARISON')
+  end
+ end
  for _,status in ipairs({'FAIL','SKIP','HARNESS_ERROR','UNSUPPORTED','NOT_RUN'}) do
   for _,side in ipairs({'reference','candidate'}) do
    local failed=vim.deepcopy(record);failed[side].status=status

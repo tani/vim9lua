@@ -79,12 +79,14 @@ end
 validators.error_stage=function(r)
  return list(r.errors,function(err) return object(err) and phase_set[err.stage]==true and text(err.text) and type(err.handled)=='boolean' end)
 end
+function M.stack_frame(frame)
+ return object(frame) and (frame.kind=='script' or frame.kind=='function' or frame.kind=='event')
+  and text(frame.name) and text(frame.file) and integer(frame.line)
+  and (frame.kind~='event' or text(frame.event))
+end
 validators.throwpoint_stack=function(r)
  return list(r.exceptions,function(err)
-  return object(err) and text(err.throwpoint) and type(err.handled)=='boolean' and list(err.frames,function(frame)
-   return object(frame) and (frame.kind=='script' or frame.kind=='function') and text(frame.name)
-    and text(frame.file) and positive(frame.line)
-  end)
+  return object(err) and text(err.throwpoint) and type(err.handled)=='boolean' and list(err.frames,M.stack_frame)
  end)
 end
 validators.messages=function(r)

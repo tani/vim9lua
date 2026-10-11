@@ -303,7 +303,9 @@ function Parser:statement()
   return node('source',t,{path=self.source:sub(first,last-1)})
  elseif k=='autocmd' then E.unsupported('Statement '..k,t)
  end
- if k=='call' or k=='eval' or k=='let' then self:take() end
+ -- Adjacent eval(...) is the builtin call, not :eval with a grouped operand.
+ local evalcall=k=='eval' and self:peek(1).text=='(' and self:peek(1).start==t.finish
+ if k=='call' or k=='eval' and not evalcall or k=='let' then self:take() end
  local x=self:expr()
  if self.dialect=='legacy' and assignment[self:peek().text] and k~='let' then E.unsupported('Legacy assignment without let',t) end
  if self.dialect=='legacy' and k~='let' and k~='call' and k~='eval' then E.unsupported('Legacy expression command',t) end

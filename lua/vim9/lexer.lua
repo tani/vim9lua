@@ -19,7 +19,7 @@ local ops=P('++')+P('--')+P('...')+P('..=')+P('=>')+P('->')+P('&&')+P('||')+P('?
   P('<=')+P('>=')+P('+=')+P('-=')+P('*=')+P('/=')+P('%=')+P('..')+S('+-*/%=!<>()[]{},.:;?&$|')
 local token=Ct(Cp()*C(sq+dq+blob+number+word+ops+S('\r\n'))*Cp())
 local space=S(' \t')^1
-local function stringvalue(raw)
+local function stringvalue(raw,node)
   if raw:sub(1,1)=="'" then return raw:sub(2,-2):gsub("''","'") end
   local out={}; local i=2
   local escapes={n='\n',r='\r',t='\t',b='\b',e=string.char(27),f='\f'}
@@ -35,7 +35,7 @@ local function stringvalue(raw)
         else out[#out+1]=c; i=i+1 end
       elseif c:match('[0-7]') then
         local oct=raw:sub(i,i+2):match('^[0-7]+'); out[#out+1]=string.char(tonumber(oct,8)%256); i=i+#oct
-      elseif c=='<' then E.unsupported('Special-key string escapes')
+      elseif c=='<' then E.unsupported('Special-key string escapes',node)
       else out[#out+1]=escapes[c] or c; i=i+1 end
     end
   end
@@ -65,10 +65,10 @@ function M.lex(source,opts)
       local finish=pos+1
       while finish<=#source and source:sub(finish,finish)~='/' do
         if source:sub(finish,finish)=='\\' then finish=finish+1 end
-        if source:sub(finish,finish)=='\n' then E.raise('E15','Unclosed catch pattern',{line=line}) end
+        if source:sub(finish,finish)=='\n' then E.raise('E15','Unclosed catch pattern',{line=line,column=column}) end
         finish=finish+1
       end
-      if finish>#source then E.raise('E15','Unclosed catch pattern',{line=line}) end
+      if finish>#source then E.raise('E15','Unclosed catch pattern',{line=line,column=column}) end
       tokens[#tokens+1]={kind='pattern',text='<pattern>',value=source:sub(pos+1,finish-1),line=line,column=column,start=pos,finish=finish+1}
       column=column+finish+1-pos;pos=finish+1
     elseif (source:sub(pos,pos)=='#' and dialect=='vim9' and not source:sub(pos,pos+1):match('^#%[')) or (source:sub(pos,pos)=='"' and commentquote()) then
@@ -77,14 +77,16 @@ function M.lex(source,opts)
       local stop=source:find('\n',pos,true); pos=stop+1; line=line+1; column=1
     else
       local t=lpeg.match(token,source,pos)
-      if not t then E.unsupported('Unrecognized token at column '..column,{line=line}) end
+      if not t then E.unsupported('Unrecognized token at column '..column,{line=line,column=column}) end
       local raw=t[2]; local kind='op'
       if raw=='\n' or raw=='\r' then kind='newline'; raw='\n'
       elseif raw:sub(1,1)=="'" or raw:sub(1,1)=='"' then kind='string'
       elseif raw:sub(1,2)=='0z' then kind='blob'
       elseif raw:match('^%d') or raw:match('^%.%d') then kind='number'
       elseif raw:match('^[%a_]') then kind='word' end
-      tokens[#tokens+1]={kind=kind,text=raw,value=kind=='string' and stringvalue(raw) or nil,line=line,column=column,start=pos,finish=t[3]}
+      local item={kind=kind,text=raw,line=line,column=column,start=pos,finish=t[3]}
+      if kind=='string' then item.value=stringvalue(raw,item) end
+      tokens[#tokens+1]=item
       if commandstart and kind=='word' and not opts.expression then
         command=raw;commandstart=false;preamble=false
         if raw=='vim9script' then dialect='vim9'

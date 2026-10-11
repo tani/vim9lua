@@ -1,19 +1,22 @@
 local M={}
 function M.parse(source,opts) return require('vim9.parser').parse(source,opts) end
 local Session={};Session.__index=Session
-local function observe(state,action,filename)
+local function observe(state,action,filename,phase,operation)
+ local saved=state:begin_action(phase,operation,filename)
  local message_start=#state.messages
- local ok,result=pcall(action)
- if not ok and type(result)=='table' and result.kind=='unsupported' then
-  return {status='UNSUPPORTED',reason=result.message,line=result.line}
- end
+ local ok,result=pcall(function() return state:context(operation,nil,action) end)
+ local context=state:end_action(saved,not ok and result or nil)
  local assertions={}
  for i=1,#state.special.errors.data do assertions[#assertions+1]=require('vim9.values').text(state.special.errors.data[i]) end
  local emitted={}
  for i=message_start+1,#state.messages do emitted[#emitted+1]='\n'..state.messages[i] end
- local observation={assertions=assertions,exception='',throwpoint='',emitted_messages=table.concat(emitted)}
+ local observation=context
+ observation.assertions=assertions;observation.exception='';observation.throwpoint='';observation.emitted_messages=table.concat(emitted)
+ if not ok and type(result)=='table' and result.kind=='unsupported' then
+  return {status='UNSUPPORTED',reason=result.message,line=result.line,observation=context}
+ end
  if not ok then
-  if type(result)~='table' or result.kind~='vim' then return {status='HARNESS_ERROR',reason=tostring(result)} end
+  if type(result)~='table' or result.kind~='vim' then return {status='HARNESS_ERROR',reason=tostring(result),observation=observation} end
   observation.exception=result.message
   observation.throwpoint=(result.filename or filename or '[script]')..', line '..(result.line or 0)
  end
@@ -26,17 +29,20 @@ function Session:run(source,opts)
  assert(type(source)=='string','source must be a string')
  opts=opts or {};local state=self.state
  return observe(state,function()
-  local tree=M.parse(source,opts)
+  return state:activate('script','',opts.filename,nil,'execute',function()
+  local tree=state:parse(source,opts)
   local Env=require('vim9.environment');local scope=Env.new(nil,'script')
   scope.filename=opts.filename;scope.exports={};scope.imports={};scope.functions={};scope.mode=tree.dialect;state.root=scope
   state.generation=state.generation+1;scope.generation=state.generation
   if opts.filename then state.modules[state:canonical(opts.filename)]=scope end
   local signal=state:block(tree.body,scope)
-  if signal and signal.kind~='finish' then require('vim9.errors').raise('E587','Invalid top-level control flow') end
- end,opts.filename)
+  if signal and signal.kind~='finish' then state:context('execute',signal,function() require('vim9.errors').raise('E587','Invalid top-level control flow') end) end
+  end)
+ end,opts.filename,opts.phase or 'body','execute')
 end
-function Session:source(filename)
- return observe(self.state,function() self.state.root=self.state:load(filename,false) end,filename)
+function Session:source(filename,opts)
+ opts=opts or {}
+ return observe(self.state,function() self.state.root=self.state:load(filename,false) end,filename,opts.phase or 'source','read')
 end
 -- Arguments are tagged vim9.values values; this preserves Number/Bool and
 -- container identity without coercing Lua inputs.  opts.filename selects a
@@ -46,10 +52,10 @@ function Session:call(name,args,opts)
  return observe(state,function()
   local scope
   if opts.filename then scope=state.modules[state:canonical(opts.filename)] else scope=state.root end
-  if not scope then require('vim9.errors').raise('E484','Script not sourced: '..opts.filename) end
+  if not scope then require('vim9.errors').raise('E484','Script not sourced: '..(opts.filename or '[script]')) end
   local value=state:call(state:lookup(name,scope),args,scope)
   return value
- end,opts.filename or state.root.filename)
+ end,opts.filename or state.root.filename,opts.phase or 'body','call')
 end
 function Session:getoption(name) return self.state:getoption(name).data end
 function Session:options()
@@ -57,5 +63,5 @@ function Session:options()
  return snapshot
 end
 function M.run(source,opts) return M.new(opts):run(source,opts) end
-function M.source(filename,opts) return M.new(opts):source(filename) end
+function M.source(filename,opts) return M.new(opts):source(filename,opts) end
 return M

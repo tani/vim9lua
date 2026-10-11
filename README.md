@@ -58,6 +58,20 @@ list for a persistent session. Unsupported features are explicit `UNSUPPORTED`.
 The default execution budget is 1,000,000 AST steps and is configurable with
 `step_limit`; exhaustion is not a successful or catchable Vim exception.
 
+`run`, `source` and `call` accept `opts.phase`: `startup`, `preparation`,
+`source`, `setup`, `body`, `teardown`, `cleanup` or `finish`. The defaults are
+`source` for files and `body` for snippets/calls; nested loads retain the outer
+action's phase. This lifecycle label is separate from the captured internal
+`read`, `parse`, `execute` or `call` operation; it does not create a compiler stage.
+`observation.error_stage`, `error_operation` and `throwpoint_stack` describe an
+escaped error and are empty on success. A genuine `throw ""` remains a failure:
+empty exception text alone does not mean success. `error_events` records that
+action's committed errors, including caught and finally-superseded errors, with
+their actual pre-unwind script/function frames and physical origins where known.
+The tables are detached snapshots, not read-only Lua tables. Probe failures do
+not become committed events; generated text keeps its physical caller provenance.
+These diagnostics do not expose Vim's `v:stacktrace` or native anonymous/SNR IDs.
+
 ## M1 / M2
 
 Implemented and tested:
@@ -241,9 +255,12 @@ The host text primitive `vim.fn.strtrans` is used for display only; it never
 delegates source execution to Neovim. Tested message samples retain leading
 newlines, blank output, controls and Unicode without comparator normalization.
 Message history, silent/highlight behavior, nested redirection, leading combining
-characters and display geometry remain debt, as do full throwpoint-stack,
-error-stage and diagnostic equivalence. The expected uncaught-exception
-regression compares exception text, not those complete diagnostic obligations.
+characters and display geometry remain debt, as do complete native throwpoint
+identity, compiler/lifecycle error-stage and diagnostic equivalence. The expected
+uncaught-exception regression compares exception text, not those complete
+diagnostic obligations. `make error-actions` exercises a separate bounded native
+source/call diagnostic and writes `reports/error-actions.json`; internal reference
+catches, assertions and the nine-channel whole runner remain outside its scope.
 
 ## Tests and source study
 

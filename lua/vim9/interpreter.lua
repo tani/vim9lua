@@ -3,6 +3,122 @@ local Env=require('vim9.environment')
 local E=require('vim9.errors')
 local State={};State.__index=State
 local M={}
+local phases={startup=true,preparation=true,source=true,setup=true,body=true,teardown=true,cleanup=true,finish=true}
+function State:begin_action(phase,operation,filename)
+ assert(phases[phase],'Invalid lifecycle phase: '..tostring(phase))
+ local saved={frames=self.active_frames,location=self.location,operation=self.operation,phase=self.phase,
+  generated=self.generated,events=self.error_events,records=self.error_records,probes=self.probes,filename=self.action_filename}
+ self.active_frames={};self.location=nil;self.operation=operation;self.phase=phase
+ self.generated=nil;self.error_events={};self.error_records={};self.probes=0
+ self.action_filename=filename
+ return saved
+end
+function State:flat_throwpoint(err)
+ return (err.filename or self.action_filename or '[script]')..', line '..(err.line or 0)
+end
+-- Freeze physical origin/frames now, but let the existing block annotation
+-- finish the compatibility throwpoint during propagation without recapturing.
+function State:commit(err)
+ if self.probes>0 or type(err)~='table' or (err.kind~='vim' and err.kind~='unsupported') then return end
+ local prior=self.error_records[err]
+ if prior then prior.throwpoint=self:flat_throwpoint(err);return prior end
+ local frame=self.active_frames[#self.active_frames]
+ local generated=self.generated and self.generated.frame==frame
+ local location=self.location or {}
+ local file=location.file or frame and frame.file
+ if file=='' then file=nil end
+ local line,column=location.line,location.column
+ if self.operation=='parse' and not generated then line,column=err.line or line,err.column or column end
+ line=line or (not generated and err.line) or 0
+ if generated then err.line=line;err.column=column end
+ local frames=E.frames(self.active_frames)
+ if #frames>0 then frames[#frames].line=line end
+ local event={kind=err.kind,text=err.message,stage=self.phase,operation=self.operation,handled=false,
+  disposition='propagated',throwpoint=self:flat_throwpoint(err),frames=frames}
+ if file and file~='' then event.file=file end
+ if line>0 then event.line=line end
+ if column then event.column=column end
+ self.error_events[#self.error_events+1]=event;self.error_records[err]=event
+ self.error_journal[#self.error_journal+1]=event
+ return event
+end
+function State:resolve(err,disposition)
+ local event=self:commit(err)
+ if event then event.disposition=disposition;if disposition=='caught' then event.handled=true end end
+ return event
+end
+function State:end_action(saved,escaped)
+ local event=escaped and self:resolve(escaped,'escaped')
+ local observation={error_events=E.events(self.error_events),error_stage=event and event.stage or '',
+  error_operation=event and event.operation or '',throwpoint_stack=event and E.frames(event.frames) or {}}
+ self.active_frames=saved.frames;self.location=saved.location;self.operation=saved.operation;self.phase=saved.phase
+ self.generated=saved.generated;self.error_events=saved.events;self.error_records=saved.records;self.probes=saved.probes
+ self.action_filename=saved.filename
+ return observation
+end
+-- Commit before restoring a location or activation: lexical environments are not
+-- a call stack, and unwinding a failed function would otherwise lose its frame.
+function State:context(operation,node,action)
+ local location,previous=self.location,self.operation
+ local frame=self.active_frames[#self.active_frames]
+ local line,column=frame and frame.line,frame and frame.column
+ if node and not (self.generated and self.generated.frame==frame) then
+  self.location={file=frame and frame.file,line=node.line,column=node.column}
+  if frame then frame.line=node.line or frame.line;frame.column=node.column end
+ end
+ self.operation=operation
+ local ok,result=pcall(action)
+ if not ok then self:commit(result) end
+ self.location,self.operation=location,previous
+ if frame then frame.line,frame.column=line,column end
+ if not ok then error(result,0) end
+ return result
+end
+function State:activate(kind,name,file,node,operation,action)
+ local frame={kind=kind,name=name or '',file=file or '',line=node and node.line or 0}
+ self.active_frames[#self.active_frames+1]=frame
+ local location=self.location;self.location={file=file,line=frame.line,column=node and node.column}
+ local ok,result=pcall(function() return self:context(operation,node,action) end)
+ self.active_frames[#self.active_frames]=nil;self.location=location
+ if not ok then error(result,0) end
+ return result
+end
+function State:generated_source(action)
+ local previous=self.generated;self.generated={frame=self.active_frames[#self.active_frames]}
+ local ok,result=pcall(action)
+ self.generated=previous
+ if not ok then error(result,0) end
+ return result
+end
+function State:probe(action)
+ self.probes=self.probes+1
+ local ok,result=pcall(action)
+ self.probes=self.probes-1
+ return ok,result
+end
+function State:parse(source,opts,expression)
+ local tree=self:context('parse',nil,function()
+  local parser=require('vim9.parser')
+  local ok,result=pcall(function() return expression and parser.expression(source,opts) or parser.parse(source,opts) end)
+  if not ok then
+   if type(result)=='table' and opts and opts.filename then result.filename=opts.filename end
+   error(result,0)
+  end
+  return result
+ end)
+ -- Generated text has no independent physical source. Retain the actual call
+ -- site, including in functions/defaults defined by :execute for later calls.
+ if self.generated and self.generated.frame==self.active_frames[#self.active_frames] then
+  local location=self.location or {}
+  local function origin(value)
+   if type(value)~='table' then return end
+   if value.line then value.line=location.line or 0;value.column=location.column end
+   for _,child in pairs(value) do if type(child)=='table' then origin(child) end end
+  end
+  origin(tree)
+ end
+ return tree
+end
 function State:script(env)
  while env.parent do env=env.parent end
  return env
@@ -23,9 +139,14 @@ function State:load(path,once)
  path=self:canonical(path)
  local old=self.modules[path]
  if once and old then return old end
- if vim.fn.filereadable(path)==0 then E.raise('E484','Can\'t open file '..path) end
- local parsed,tree=pcall(require('vim9.parser').parse,table.concat(vim.fn.readfile(path),'\n')..'\n',{filename=path,dialect='legacy'})
- if not parsed then if type(tree)=='table' then tree.filename=path end;error(tree,0) end
+ local source=self:context('read',nil,function()
+  if vim.fn.filereadable(path)==0 then E.raise('E484','Can\'t open file '..path) end
+  return table.concat(vim.fn.readfile(path),'\n')..'\n'
+ end)
+ -- A failed read has not entered the requested script: keep the real caller
+ -- activation (or no activation for a direct host source action).
+ return self:activate('script','',path,nil,'execute',function()
+ local tree=self:parse(source,{filename=path,dialect='legacy'})
  local noclear=tree.body[1] and tree.body[1].tag=='vim9script' and tree.body[1].noclear
  local scope=old or Env.new(nil,'script')
  scope.filename=path;scope.exports=scope.exports or {};scope.imports={};scope.mode=tree.dialect
@@ -34,11 +155,12 @@ function State:load(path,once)
  self.modules[path]=scope -- register before executing to permit cycles
  scope.reloadable={}
  if noclear and old then for name in pairs(scope.cells) do scope.reloadable[name]=true end end
- local ok,signal=pcall(function() return self:block(tree.body,scope) end)
+ local ok,signal=pcall(function() return self:context('execute',nil,function() return self:block(tree.body,scope) end) end)
  scope.reloadable=nil
  if not ok then self.modules[path]=nil;error(signal,0) end
- if signal and signal.kind~='finish' then E.raise('E587','Invalid top-level control flow') end
+ if signal and signal.kind~='finish' then self:context('execute',signal,function() E.raise('E587','Invalid top-level control flow') end) end
  return scope
+ end)
 end
 function State:import(n,env)
  local owner=self:script(env)
@@ -228,6 +350,9 @@ function State:setname(name,x,env,node,declare,mode,legacylet)
  end
 end
 function State:call(f,args,env,node)
+ return self:context('call',node,function() return self:invoke(f,args,env,node) end)
+end
+function State:invoke(f,args,env,node)
  self:tick(node)
  if f.kind=='string' then f=self:lookup(f.data,env,node) end
  if f.kind~='func' then E.raise('E1085','Not a callable type',node) end
@@ -235,15 +360,24 @@ function State:call(f,args,env,node)
  if d.null then E.raise('E1078','Using a null function',node) end
  if d.partial then local xs={};for _,x in ipairs(d.args) do xs[#xs+1]=x end;for _,x in ipairs(args) do xs[#xs+1]=x end;return self:call(d.partial,xs,env,node) end
  if d.builtin then return d.builtin(args,env) end
+ local maximum,variadic,index=0,false,1
+ for _,p in ipairs(d.node.params) do
+  if p.vararg then variadic=true;index=#args+1
+  else
+   maximum=maximum+1
+   if not args[index] and not p.default then E.raise('E119','Not enough arguments for function: '..(d.name or '<lambda>'),node) end
+   index=index+1
+  end
+ end
+ if not variadic and #args>maximum then E.raise('E118','Too many arguments for function: '..(d.name or '<lambda>'),node) end
  self.depth=self.depth+1;if self.depth>self.maxdepth then self.depth=self.depth-1;E.raise('E132','Function call depth is higher than maxfuncdepth',node) end
  local scope=Env.new(d.env,'function');scope.mode=d.node.dialect or d.env:dialect();scope.arguments={};local i=1
- local ok,result=pcall(function()
+ local ok,result=pcall(function() return self:activate('function',d.name,self:script(d.env).filename,d.node,'call',function()
   for _,p in ipairs(d.node.params) do
    local x=args[i]
    if p.vararg then local xs={};for j=i,#args do xs[#xs+1]=args[j] end;x=V.list(xs);i=#args+1
    else
     if not x and p.default then x=self:expr(p.default,scope) end
-    if not x then E.raise('E119','Not enough arguments for function: '..(d.name or '<lambda>'),node) end
     i=i+1
    end
    if scope.mode=='legacy' then
@@ -255,20 +389,22 @@ function State:call(f,args,env,node)
    else scope:declare(p.name,x,'var',p) end
   end
   if scope.mode=='legacy' and not scope.arguments['0'] then scope.arguments['0']=V.int(0);scope.arguments['000']=V.list() end
-  if i<=#args then E.raise('E118','Too many arguments for function: '..(d.name or '<lambda>'),node) end
   if d.node.expr then return self:expr(d.node.expr,scope) end
   local signal=self:block(d.node.body,scope)
   if signal then
    if signal.kind=='return' then return signal.value end
-   E.raise('E587','Invalid control flow outside loop',node)
+   self:context('execute',signal,function() E.raise('E587','Invalid control flow outside loop',node) end)
   end
   return scope.mode=='legacy' and V.int(0) or d.node.annotation and V.default(d.node.annotation) or V.void
- end)
+ end) end)
  self.depth=self.depth-1
  if not ok then error(result,0) end
  return result
 end
 function State:expr(n,env,namespace)
+ return self:context('execute',n,function() return self:expression(n,env,namespace) end)
+end
+function State:expression(n,env,namespace)
  self:tick(n)
  local k=n.tag
  if k=='literal' then
@@ -280,7 +416,9 @@ function State:expr(n,env,namespace)
   return V.integer(n.value)
  elseif k=='cast' then return self:expr(n.value,env)
  elseif k=='interpolate' then
-  local text=n.value:gsub('{([^{}]+)}',function(expr) return V.text(self:expr(require('vim9.parser').expression(expr,{dialect=env:dialect()}),env)) end)
+  local text=n.value:gsub('{([^{}]+)}',function(expr)
+   return self:generated_source(function() return V.text(self:expr(self:parse(expr,{dialect=env:dialect()},true),env)) end)
+  end)
   return V.string(text)
  elseif k=='name' then
   local value=self:lookup(n.name,env,n)
@@ -334,11 +472,17 @@ end
 function State:block(body,env)
  for _,n in ipairs(body) do
   local ok,signal=pcall(function() return self:statement(n,env) end)
-  if not ok then if type(signal)=='table' then signal.line=signal.line or n.line;signal.filename=signal.filename or self:script(env).filename end;error(signal,0) end
+  if not ok then
+   if type(signal)=='table' then signal.line=signal.line or n.line;signal.filename=signal.filename or self:script(env).filename end
+   self:commit(signal);error(signal,0)
+  end
   if signal then return signal end
  end
 end
 function State:statement(n,env)
+ return self:context('execute',n,function() return self:execute(n,env) end)
+end
+function State:execute(n,env)
  self:tick(n);local k=n.tag
  if k=='vim9script' then local script=self:script(env);script.vim9=true;script.mode='vim9';return end
  if k=='defcompile' then return end
@@ -369,9 +513,9 @@ function State:statement(n,env)
    f.data.generation=owner.generation
    functions[key]=f
   elseif name:sub(1,2)=='g:' then self.globals[name:sub(3)]=f else scope:declare(name,f,'final',n) end
- elseif k=='return' then return {kind='return',value=n.value and self:expr(n.value,env) or env:dialect()=='legacy' and V.int(0) or V.void}
- elseif k=='break' or k=='continue' or k=='finish' then return {kind=k}
- elseif k=='throw' then error({kind='vim',message=V.text(self:expr(n.value,env)),line=n.line},0)
+ elseif k=='return' then return {kind='return',value=n.value and self:expr(n.value,env) or env:dialect()=='legacy' and V.int(0) or V.void,line=n.line,column=n.column}
+ elseif k=='break' or k=='continue' or k=='finish' then return {kind=k,line=n.line,column=n.column}
+ elseif k=='throw' then E.throw(V.text(self:expr(n.value,env)),n)
  elseif k=='block' then return self:block(n.body,Env.new(env))
  elseif k=='if' then
   for _,b in ipairs(n.branches) do if self:condition(self:expr(b.cond,env),env,n) then return self:block(b.body,Env.new(env)) end end
@@ -404,34 +548,14 @@ function State:statement(n,env)
    if signal then if signal.kind=='break' then break elseif signal.kind~='continue' then return signal end end
    i=i+1
   end
- elseif k=='try' then
-  local saved_exception,saved_throwpoint=self.special.exception,self.special.throwpoint
-  local ok,result=pcall(function() return self:block(n.body,Env.new(env)) end)
-  local in_function=false;local scope=env
-  while scope do if scope.kind=='function' then in_function=true;break end;scope=scope.parent end
-  if not ok and type(result)=='table' and result.kind=='vim' and not (result.bypass_script_catch and not in_function) then
-   self.special.exception=V.string(result.message);self.special.throwpoint=V.string((result.filename or self:script(env).filename or '[script]')..', line '..(result.line or n.line))
-   for _,c in ipairs(n.catches) do
-    if not c.pattern or vim.fn.match(result.message,c.pattern)>=0 then
-     ok,result=pcall(function() return self:block(c.body,Env.new(env)) end);break
-    end
-   end
-  end
-  if not ok and (type(result)~='table' or result.kind~='vim') then error(result,0) end
-  if n.finally then
-   local final_ok,final=pcall(function() return self:block(n.finally,Env.new(env)) end)
-   if not final_ok then ok,result=false,final
-   elseif final and ok then result=final
-   elseif final and not ok and final.kind=='return' then result.bypass_script_catch=true end
-  end
-  self.special.exception,self.special.throwpoint=saved_exception,saved_throwpoint
-  if not ok then error(result,0) end
-  return result
+ elseif k=='try' then return self:try(n,env)
  elseif k=='echo' or k=='echomsg' or k=='echoerr' or k=='execute' then
   local xs={};for _,x in ipairs(n.args) do local v=self:expr(x,env);xs[#xs+1]=v.kind=='string' and v.data or V.repr(v) end
   local text=table.concat(xs,' ')
   if k=='echoerr' then E.raise('Vim(echoerr)',text,n)
-  elseif k=='execute' then local tree=require('vim9.parser').parse(text,{dialect=env:dialect()});return self:block(tree.body,env)
+  elseif k=='execute' then return self:generated_source(function()
+   local tree=self:parse(text,{dialect=env:dialect()});return self:block(tree.body,env)
+  end)
   else
    if k=='echo' then
     text=text:gsub('[^\n\r\t]+',function(chunk) return vim.fn.strtrans(chunk) end)
@@ -445,9 +569,42 @@ function State:statement(n,env)
   end
  else E.unsupported('AST statement '..k,n) end
 end
+function State:try(n,env)
+ local saved_exception,saved_throwpoint=self.special.exception,self.special.throwpoint
+ local completed,value=pcall(function()
+  local ok,result=pcall(function() return self:block(n.body,Env.new(env)) end)
+  local in_function=false;local scope=env
+  while scope do if scope.kind=='function' then in_function=true;break end;scope=scope.parent end
+  if not ok and type(result)=='table' and result.kind=='vim' and not (result.bypass_script_catch and not in_function) then
+   self.special.exception=V.string(result.message);self.special.throwpoint=V.string((result.filename or self:script(env).filename or '[script]')..', line '..(result.line or n.line))
+   for _,c in ipairs(n.catches) do
+    if not c.pattern or vim.fn.match(result.message,c.pattern)>=0 then
+     self:resolve(result,'caught')
+     ok,result=pcall(function() return self:block(c.body,Env.new(env)) end);break
+    end
+   end
+  end
+  -- Unsupported features/fuel are host-side termination, never Vim catches.
+  if not ok and (type(result)~='table' or result.kind~='vim') then error(result,0) end
+  if n.finally then
+   local final_ok,final=pcall(function() return self:block(n.finally,Env.new(env)) end)
+   if not final_ok then
+    if not ok then self:resolve(result,'superseded') end
+    ok,result=false,final
+   elseif final and ok then result=final
+   elseif final and not ok and final.kind=='return' then result.bypass_script_catch=true end
+  end
+  if not ok then error(result,0) end
+  return result
+ end)
+ self.special.exception,self.special.throwpoint=saved_exception,saved_throwpoint
+ if not completed then error(value,0) end
+ return value
+end
 function M.new(opts)
  opts=opts or {};local state=setmetatable({steps=0,limit=opts.step_limit or 1000000,depth=0,maxdepth=100,
-  assertions={},messages={},globals={},functions={},generation=0,filename=opts.filename,special={}},State)
+  assertions={},messages={},globals={},functions={},generation=0,filename=opts.filename,special={},
+  active_frames={},error_events={},error_records={},error_journal={},probes=0},State)
  -- Unix default from pinned Vim optiondefs.h, independent of the host editor.
  state.options={isident='@,48-57,_,192-255'}
  state.modules={};state.runtimepath=opts.runtimepath or vim.opt.runtimepath:get();state.root=Env.new(nil,'script');state.root.exports={};state.root.imports={};state.root.functions={};state.root.mode=opts.dialect or 'vim9';state.root.filename=opts.filename

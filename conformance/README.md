@@ -178,7 +178,7 @@ Channel record fields (in addition to `phase`):
 | `assertions` | `errors`: strings of unresolved assertion errors attributed to this phase; `calls`: ordered `{name: nonempty string, arguments: JSON array, passed: boolean}` assertion calls. |
 | `exception_text` | `exceptions`: ordered `{text: string, handled: boolean}` caught/uncaught exception records. Empty success is `[]`, not an absent field. |
 | `error_stage` | `errors`: ordered `{stage: one of the eight phase names, text: string, handled: boolean}` errors assigned at their origin. |
-| `throwpoint_stack` | `exceptions`: ordered `{throwpoint: string, handled: boolean, frames: [...]}`; each frame has `kind: "script" or "function"`, `name`, `file` strings and positive integer `line`. Record the stack while active, not invented after unwinding. |
+| `throwpoint_stack` | `exceptions`: ordered `{throwpoint: string, handled: boolean, frames: [...]}`; each frame has `kind: "script", "function" or "event"`, `name`, `file` strings and nonnegative integer `line`. An event frame also requires its native `event` string. Empty native paths and actual zero coordinates are permitted; missing, negative or fractional coordinates are rejected. Record the stack while active, not invented after unwinding. |
 | `messages` | `emitted`, `stdout`, `stderr`: exact strings; `history`: ordered strings. Include lifecycle output, not just body echo or the sample's `emitted_messages`. |
 | `editor_state` | `snapshot` with `cwd` string, `environment`, `options`, `registers`, `variables` JSON objects; `current: {buffer, window, tab}` positive ids; nonempty `buffers`, `windows`, `tabs` arrays described below. |
 | `filesystem` | `entries`: `{path, kind, mode}` inventory records, with lowercase `sha256` for `kind: "file"` and string `target` for `kind: "symlink"`; `"directory"` is also valid. `mode` is a nonnegative integer. `events`: ordered `{operation, path, success}` objects, operation one of `create`, `write`, `remove`, `rename`, `chmod`, `symlink`; rename additionally requires `destination`. Preserve operation details as extra JSON fields. |
@@ -219,6 +219,111 @@ not successful evidence even if both runs agree. Handled exceptions may be
 captured and compared, but do not exempt a non-PASS run. Rejected whole records
 are integrity problems for strict progress. This does not alter sample
 comparisons, discovery scopes, current flags or denominator accounting.
+
+### Bounded error-action diagnostic
+
+`scripts/error-actions.lua` is a runnable source/call recorder, **not** an
+original-runner adapter or a whole-result producer. Run it with
+`nvim --headless -u NONE -l scripts/error-actions.lua`; the default output is
+`reports/error-actions.json`. `--output PATH`, `--input PATH`, `--reference PATH`,
+`--timeout MILLISECONDS` and `--require-match` are supported. Input is an array
+of `{id, files: [{file, name}], actions: [...], runtimepath?: [...]}` cases.
+`file` is an unchanged repository-relative input, `name` is its relative copied
+workspace path, and optional runtimepath entries name copied support directories.
+Actions are `{kind: "source", file: "<copied name>", phase: "<lifecycle phase>"}`
+or `{kind: "call", name: "<public legacy function>", arguments?: [...], phase: ...}`.
+Call arguments are finite numbers, booleans and strings; script-local functions,
+anonymous functions, containers, arbitrary execute/eval and other action forms
+are explicitly unsupported, never silently replaced by a fake implementation.
+Reference execution actions are constructed from the validated public fields
+only. Recorder-private `unsupported` and `absolute_file` values are derived by
+the recorder, never honored from caller metadata. The original input action
+objects remain unchanged in report `actions` for transparent provenance.
+
+The helper `vim9.conformance.actions.run(config, {root = repository_root})`
+copies every declared file byte-for-byte into independent reference/candidate
+cwd/support trees. It preserves input hashes, the current harness fingerprint,
+raw process output, raw per-action observations, actual paths, observer identity
+and mapping rules. Actions continue after an escaped exception, enabling genuine
+failure-to-success transitions in the same independent sessions. A generated
+legacy observer performs real source commands and real function calls; it copies
+the locked native `v:stacktrace` frame fields inside the active catch. Function
+identities come from `get(native.funcref, 'name')` and `string(native.funcref)`,
+not a parsed flat throwpoint. Raw `filepath`, `lnum`, function representation,
+event metadata and observer frames remain in the report. `getstacktrace()` is
+recorded separately as the catcher's current stack, not used as throw evidence.
+
+Computed checks compare literal escaped exception text, lifecycle phase and
+ordered physical application frames. The only application projection drops
+frames whose file exactly equals the declared generated observer file and maps
+each declared owned workspace prefix to `workspace://`. Foreign paths are
+unchanged. Raw frames and mapping provenance are retained; messages, exception
+prefixes and flat throwpoints are not stripped or normalized. Native event
+frames retain their event value, and zero coordinates are never replaced by 1.
+Additional raw frame fields remain subject to exact equality in the whole
+consumer; the bounded application projection declares only kind/name/file/line
+and native event as its comparison domain.
+
+Bounded record `status` means **escaped-action outcome only**: PASS requires an
+empty escaped exception, phase and stack; FAIL requires a valid nonempty
+lifecycle phase, but its exception text and stack may genuinely be empty.
+Reference status comes from the actual boundary catch; candidate status uses
+the captured escaped phase, not text length. A valid `throw ''` is therefore
+FAIL with literal empty exception text, distinct from successful empty fields.
+The authored empty-throw/following-success diagnostic verifies phase, event and
+stack capture and clearing without string normalization. Contradictory
+reference evidence is ORACLE_ERROR; contradictory candidate evidence is
+HARNESS_ERROR. UNSUPPORTED and HARNESS_ERROR are never recast as normal outcomes.
+Candidate `runtime_status` retains the actual Session result status, and the
+raw observation retains assertion errors. A real assertion failure can therefore
+have bounded PASS but runtime FAIL. Reference assertion state is explicitly
+unobserved here, and the only checks are the three declared escaped fields:
+even a bounded MATCH with a runtime FAIL establishes no assertion, channel or
+whole-test equivalence. The authored assertion-failure diagnostic exercises this
+distinction; no diagnostic earns ledger credit.
+
+The candidate Session APIs expose detached per-action `error_events`,
+`error_stage`, `error_operation` and `throwpoint_stack` snapshots. These are
+ordinary mutable Lua tables, not read-only proxies: caller mutation cannot alter
+the journal, another observation or the separately copied escaped stack.
+Event `file`, `line` and `column` are omitted when unknown. Direct host call
+lookup/arity failures have no entered callee or synthetic script frame; their
+structured stack may be empty while the legacy flat throwpoint fallback remains.
+Source accepts `opts.phase` (default `source`); run/call default to `body`.
+Invalid phases reject before the action. The eight lifecycle phases are
+orchestration labels; `read`, `parse`, `execute` and `call` are separate internal
+operations, not compiler stages. Nested source/import preserves the action's
+origin phase. Candidate named function identities are declaration names, not a
+native Funcref/SNR serializer; anonymous functions have no native Vim identity
+and use an empty name, not invented IDs. There is no language `v:stacktrace`
+exposure. Unknown host faults remain HARNESS_ERROR, not fabricated Vim events.
+Successful actions have empty escaped phase/operation/stack even after failures.
+
+Reference boundary catches cannot observe internally handled errors. The report
+explicitly marks these unobserved, while candidate events can include them;
+they are not compared as if reference absence proved no internal error.
+`tests/error-actions.lua` exercises source throws, physical nested function
+coordinates, setup/body/teardown labels, source inside a call, internal handling,
+explicit same-text rethrow, current-versus-throw stack and return to success.
+The missing-source-inside-call case observes a real read failure at the physical
+caller function line: an unread target file is not an entered script frame.
+Its tests require matching body phase and caller-only application stack while
+allowing honest literal exception-prefix/path differences to remain diagnostic.
+They also permit future literal agreement, rather than pinning a mismatch.
+The deferred Vim9 parse case diagnoses eager-candidate/deferred-reference
+semantic differences without relabeling parse as compile or normalizing literal
+diagnostics. Its tests preserve actual reference source success/body failure;
+candidate language UNSUPPORTED must remain UNSUPPORTED with its captured phase
+and operation, never MATCH. Supported outcomes recompute the three checks, and
+a future faithful implementation may match instead of preserving a bug class.
+Default runs retain MISMATCH and language UNSUPPORTED as nonfatal diagnostics.
+Counts distinguish MATCH, MISMATCH, UNSUPPORTED and each fatal verdict, plus a
+`fatal` subtotal. ORACLE_ERROR, HARNESS_ERROR, BLOCKED, TIMEOUT and ORACLE_TIMEOUT
+fail the CLI. `--require-match` additionally rejects every non-MATCH result.
+The unchanged original comparator file is sourced/called as bounded evidence
+only. No adapter registration, nine-channel claim, sample-registry entry or
+whole-test credit follows from this report.
+
 
 ## Observables and freshness
 

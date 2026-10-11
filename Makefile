@@ -14,7 +14,7 @@ selftest:
 	$(NVIM) --headless -u NONE -l scripts/m0.lua selftest
 m0:
 	$(NVIM) --headless -u NONE -l scripts/m0.lua all
-.PHONY: m12 m12-fixtures regression-fixtures regression unit test
+.PHONY: m12 m12-fixtures regression-fixtures regression unit error-actions test
 m12-fixtures:
 	$(NVIM) --headless -u NONE -l scripts/fixtures.lua
 regression-fixtures:
@@ -25,7 +25,10 @@ regression: regression-fixtures
 	$(NVIM) --headless -u NONE -l scripts/m0.lua regression
 unit:
 	$(NVIM) --headless -u NONE -l tests/unit.lua
-test: unit conformance-unit selftest differential m12 regression m3
+error-actions:
+	$(NVIM) --headless -u NONE -l tests/error-actions.lua
+	$(NVIM) --headless -u NONE -l scripts/error-actions.lua
+test: unit conformance-unit error-actions selftest differential m12 regression m3
 
 .PHONY: m3 m3-fixtures
 m3-fixtures:
